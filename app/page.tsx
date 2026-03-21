@@ -1,65 +1,102 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../src/lib/firebase/client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export async function login(email: string, password: string) {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    return cred.user;
+  } catch (error: any) {
+    console.error("Login failed:", error);
+    throw error;
+  }
+}
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await login(email, password);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Credential verification failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-zinc-50 font-sans">
+      <div className="w-full max-w-sm space-y-12">
+        <div className="text-center space-y-6">
+           <div className="bg-emerald-600 p-2 w-fit rounded-xl shadow-xl mx-auto shadow-emerald-700/20 group hover:rotate-[360deg] transition-transform duration-1000">
+              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
+               </svg>
+           </div>
+           <div className="space-y-2">
+              <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">ST. FERDINAND</h1>
+              <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Ledger Access</p>
+           </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-xl bg-red-50 p-4 text-[10px] font-black uppercase tracking-widest text-red-800 flex items-center justify-center gap-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+              {error}
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Administrative Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-5 py-4 bg-white border border-gray-100 rounded-xl focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm font-bold text-emerald-950 shadow-sm"
+                placeholder="admin@cathedral.org"
+              />
+            </div>
+            <div className="space-y-1">
+               <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Access Key</label>
+               <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-5 py-4 bg-white border border-gray-100 rounded-xl focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm font-bold text-emerald-950 shadow-sm"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4.5 bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-700/10 disabled:opacity-50 mt-10"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {loading ? "Verifying..." : "Enter Dashboard"}
+          </button>
+        </form>
+
+        <p className="text-center text-[8px] font-black text-zinc-300 uppercase tracking-widest">
+          Secure Access Protocol v1.0
+        </p>
+      </div>
     </div>
   );
 }

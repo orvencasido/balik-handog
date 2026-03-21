@@ -2,25 +2,46 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #064e3b; /* Emerald 900 */
+  --sidebar-bg: #ffffff;
+  --sidebar-active: #ecfdf5; /* Emerald 50 */
+  --card-bg: #ffffff;
+  --accent-green: #065f46; /* Emerald 800 */
+  --accent-gold: #c48b32;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --color-forest: #064e3b;
+  --color-forest-light: #ecfdf5;
+  --color-gold: #c48b32;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui;
+  margin: 0;
+}
+
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-border {
+  border-right: 1px solid #f1f5f9;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #dcfce7;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb :hover {
+  background: #bbf7d0;
 }

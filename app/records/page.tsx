@@ -1,0 +1,159 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth, db } from "../../src/lib/firebase/client";
+
+interface Donation {
+  id: string;
+  giverName: string;
+  amount: number;
+  groupName: string;
+  donationDate: string;
+  notes: string;
+  monthKey: string;
+  createdAt: any;
+}
+
+export default function DonationsList() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) router.push("/");
+      else setUser(currentUser);
+    });
+
+    const donationsQuery = query(
+      collection(db, "donations"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribeDonations = onSnapshot(donationsQuery, (snapshot) => {
+      const donationData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Donation[];
+      setDonations(donationData);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeDonations();
+    };
+  }, [router]);
+
+  const filteredDonations = donations.filter((donation) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      donation.giverName?.toLowerCase().includes(q) ||
+      donation.groupName?.toLowerCase().includes(q) ||
+      donation.notes?.toLowerCase().includes(q)
+    );
+  });
+
+  // "Don't show everything all at once"
+  // If no search query, only show the 15 most recent records.
+  // If searching, show all matches.
+  const isSearching = searchQuery.trim().length > 0;
+  const displayDonations = isSearching ? filteredDonations : donations.slice(0, 15);
+
+  if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Scanning Ledger...</div>;
+
+  return (
+    <div className="flex-1 space-y-6 font-sans max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-black text-emerald-950 tracking-tight leading-none uppercase">Records List</h1>
+          <p className="text-emerald-700/60 font-bold text-[10px] uppercase tracking-widest mt-2">
+            {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
+          </p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
+          <div className="relative w-full sm:w-80 group">
+            <input 
+              type="text" 
+              placeholder="Search by name or ministry..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+            />
+            <svg 
+              className="absolute left-3.5 top-3.5 h-4 w-4 text-emerald-300 group-focus-within:text-emerald-600 transition-colors" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <button 
+            onClick={() => router.push("/donate")}
+            className="w-full sm:w-auto px-6 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transform active:scale-95 transition-all shadow-md shadow-emerald-700/10"
+          >
+            New Record
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-zinc-50 border-b border-gray-100">
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Date</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Notes</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {displayDonations.map((donation) => (
+              <tr key={donation.id} className="hover:bg-emerald-50/30 transition-colors group">
+                <td className="px-8 py-5">
+                   <div className="flex flex-col">
+                      <span className="font-black text-xs text-emerald-950 group-hover:text-emerald-700 transition-colors">{donation.giverName}</span>
+                      <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter mt-0.5">Contributor</span>
+                   </div>
+                </td>
+                <td className="px-8 py-5">
+                  <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.groupName || 'General'}</span>
+                </td>
+                <td className="px-8 py-5 font-black text-xs text-emerald-950 tabular-nums">₱ {donation.amount.toLocaleString()}</td>
+                <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{donation.donationDate}</td>
+                <td className="px-8 py-5 italic text-[10px] font-bold text-zinc-300 max-w-xs truncate group-hover:text-emerald-600 transition-all text-right">{donation.notes || '--'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {!isSearching && donations.length > 15 && (
+          <div className="bg-zinc-50 p-6 text-center border-t border-gray-50">
+            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+              Total {donations.length} records in ledger. Use search bar to find specific entries.
+            </p>
+          </div>
+        )}
+
+        {isSearching && displayDonations.length === 0 && (
+          <div className="p-20 text-center">
+             <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+             </div>
+             <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">No matching results for "{searchQuery}"</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
