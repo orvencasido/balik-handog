@@ -17,7 +17,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.push("/dashboard");
+      router.push("/dashboards");
     } catch (err: any) {
       setError(err.message || "Credential verification failed.");
     } finally {
@@ -30,15 +30,15 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-12">
         {/* ---------- Branding ---------- */}
         <div className="text-center space-y-6">
-           <div className="bg-emerald-600 p-2 w-fit rounded-xl shadow-xl mx-auto shadow-emerald-700/20 group hover:rotate-[360deg] transition-transform duration-1000">
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
-               </svg>
-           </div>
-           <div className="space-y-2">
-              <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">ST. FERDINAND</h1>
-              <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Ledger Access</p>
-           </div>
+          <div className="bg-emerald-600 p-2 w-fit rounded-xl shadow-xl mx-auto shadow-emerald-700/20 group hover:rotate-[360deg] transition-transform duration-1000">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">ST. FERDINAND</h1>
+            <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Donation System</p>
+          </div>
         </div>
 
         {/* ---------- Login Form ---------- */}
@@ -63,8 +63,8 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-1">
-               <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Access Key</label>
-               <input
+              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Access Key</label>
+              <input
                 type="password"
                 required
                 value={password}

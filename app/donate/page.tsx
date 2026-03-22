@@ -81,16 +81,9 @@ export default function AddDonation() {
   if (loading) return <LoadingScreen message="Checking access clearance..." />;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative min-h-full">
-      {/* Modern Ambient Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-400/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-300/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-2xl relative z-10 transition-all duration-500 ease-out animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-white/70 backdrop-blur-2xl p-8 sm:p-12 rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-900/5 relative overflow-hidden">
-
-          {/* Decorative Top Accent */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
+    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 bg-white min-h-full">
+      <div className="w-full max-w-2xl transition-all duration-500 ease-out animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-white p-8 sm:p-12 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden">
 
           {/* ---------- Title Area ---------- */}
           <div className="mb-12 text-center flex flex-col items-center">
@@ -194,7 +187,7 @@ export default function AddDonation() {
               <button
                 type="submit"
                 disabled={submitLoading}
-                className="w-full sm:w-auto min-w-[200px] float-right py-4 px-8 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl text-sm font-bold shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_25px_rgb(0,0,0,0.15)] transform active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-2 group"
+                className="w-full sm:w-auto min-w-[200px] float-right py-4 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-600/25 hover:shadow-xl hover:shadow-emerald-600/35 transform active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-2 group"
               >
                 {submitLoading ? (
                   <>
@@ -206,10 +199,7 @@ export default function AddDonation() {
                   </>
                 ) : (
                   <>
-                    Commit Transaction
-                    <svg className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                    Submit Donation
                   </>
                 )}
               </button>
