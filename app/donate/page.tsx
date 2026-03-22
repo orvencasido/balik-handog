@@ -65,7 +65,7 @@ export default function AddDonation() {
 
       setStatus({ type: "success", message: "Donation record successfully secured." });
       setFormData({ ...INITIAL_FORM_DATA, donationDate: new Date().toISOString().split("T")[0] });
-      
+
       // Auto-hide status after 3 seconds
       setTimeout(() => setStatus(null), 3000);
     } catch (err: any) {
@@ -88,30 +88,24 @@ export default function AddDonation() {
 
       <div className="w-full max-w-2xl relative z-10 transition-all duration-500 ease-out animate-in fade-in slide-in-from-bottom-4">
         <div className="bg-white/70 backdrop-blur-2xl p-8 sm:p-12 rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-900/5 relative overflow-hidden">
-          
+
           {/* Decorative Top Accent */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
 
           {/* ---------- Title Area ---------- */}
           <div className="mb-12 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-50 to-teal-50/20 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm mb-6 rotate-3">
-              <svg className="w-8 h-8 text-emerald-600 -rotate-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">Record Entry</h1>
-            <p className="text-sm text-zinc-500 font-medium mt-2">Initialize a new secure transaction into the Balik Handog Ledger.</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">Donation</h1>
+            <p className="text-sm text-zinc-500 font-medium mt-2">Record Donation Balik Handog</p>
           </div>
 
           {/* ---------- Status banner ---------- */}
           <div className={`transition-all duration-300 overflow-hidden ${status ? "max-h-20 opacity-100 mb-8" : "max-h-0 opacity-0 mb-0"}`}>
             {status && (
               <div
-                className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 border ${
-                  status.type === "success" 
-                    ? "bg-emerald-50/50 text-emerald-700 border-emerald-100" 
-                    : "bg-red-50/50 text-red-700 border-red-100"
-                }`}
+                className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 border ${status.type === "success"
+                  ? "bg-emerald-50/50 text-emerald-700 border-emerald-100"
+                  : "bg-red-50/50 text-red-700 border-red-100"
+                  }`}
               >
                 <span className={`flex shrink-0 h-2.5 w-2.5 rounded-full ${status.type === "success" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"}`} />
                 {status.message}
@@ -146,7 +140,7 @@ export default function AddDonation() {
                       onChange={handleInputChange}
                       className="modern-input pl-9 tabular-nums tracking-tight"
                       required
-                      placeholder="0.00"
+                      placeholder="   0.00"
                     />
                   </div>
                 </FormField>
