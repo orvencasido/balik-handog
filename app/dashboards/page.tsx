@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../src/lib/firebase/client";
 
 interface Donation {
@@ -12,7 +12,6 @@ interface Donation {
   amount: number;
   groupName: string;
   donationDate: string;
-  createdAt: any;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -20,18 +19,17 @@ const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "Ju
 
 export default function Dashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
 
   const now = new Date();
   const [activeYear, setActiveYear] = useState<string>(now.getFullYear().toString());
   const [activeMonth, setActiveMonth] = useState<number>(now.getMonth());
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) router.push("/");
-      else setUser(currentUser);
     });
 
     // We keep a sufficient limit for recent contributions and filtering
@@ -74,58 +72,62 @@ export default function Dashboard() {
   const monthLargest = monthFiltered.length > 0 ? [...monthFiltered].sort((a, b) => b.amount - a.amount)[0] : null;
 
   const monthlyStats = MONTHS.map((name, index) => {
-    const total = yearFiltered.filter(d => new Date(d.donationDate).getMonth() === index)
-      .reduce((acc, curr) => acc + curr.amount, 0);
-    return { name, total };
+    const txs = yearFiltered.filter(d => new Date(d.donationDate).getMonth() === index);
+    const total = txs.reduce((acc, curr) => acc + curr.amount, 0);
+    const count = txs.length;
+    const givers = new Set(txs.map(d => d.giverName)).size;
+    return { name, total, count, givers };
   });
 
   const yearMax = Math.max(...monthlyStats.map(s => s.total), 1);
+  const GRAPH_WIDTH = 420;
+  const GRAPH_HEIGHT = 160;
+  const GRAPH_PLOT_HEIGHT = 140;
 
   const generatePath = () => {
+    if (monthlyStats.length === 0) return "";
     return monthlyStats.map((s, i) => {
-      const x = (i / 11) * 600;
-      const y = 160 - (s.total / yearMax) * 140;
-      return `${i === 0 ? 'M' : 'L'}${x},${y}`;
+      const x = (i / 11) * GRAPH_WIDTH;
+      const y = GRAPH_HEIGHT - (s.total / yearMax) * GRAPH_PLOT_HEIGHT;
+      if (i === 0) return `M${x},${y}`;
+      const prevX = ((i - 1) / 11) * GRAPH_WIDTH;
+      const prevY = GRAPH_HEIGHT - (monthlyStats[i - 1].total / yearMax) * GRAPH_PLOT_HEIGHT;
+      const cpX = prevX + (x - prevX) / 2;
+      return `C${cpX},${prevY} ${cpX},${y} ${x},${y}`;
     }).join(" ");
   };
 
-  const rankData = Array.from(new Set(monthFiltered.map(d => d.groupName)))
-    .map(dept => {
-      const total = monthFiltered.filter(d => d.groupName === dept).reduce((acc, curr) => acc + curr.amount, 0);
-      return { name: dept, total };
-    })
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5);
+
 
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Initializing Dashboard...</div>;
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden p-6 gap-6 font-sans max-w-[1600px] mx-auto bg-[#fafafa]">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden gap-6 font-sans w-full bg-white">
 
       {/* 1. COMPACT HEADER */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm shrink-0">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
         <div>
-          <h1 className="text-xl font-black text-emerald-950 uppercase tracking-tight">Financial Dashboard</h1>
-          <p className="text-emerald-700/60 font-bold text-[9px] uppercase tracking-widest mt-1">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+          <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
+          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-emerald-600 px-4 py-2 rounded-xl shadow-lg shadow-emerald-700/10">
-            <span className="text-[9px] font-black text-white/50 uppercase">Month:</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-emerald-600 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-700/10">
+            <span className="text-[8px] font-black text-white/50 uppercase">Month:</span>
             <select
               value={activeMonth}
               onChange={(e) => setActiveMonth(parseInt(e.target.value))}
-              className="bg-transparent text-[11px] font-black text-white outline-none cursor-pointer"
+              className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
             >
               {FULL_MONTHS.map((m, i) => <option key={m} value={i} className="text-emerald-950">{m}</option>)}
             </select>
           </div>
 
-          <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
             <select
               value={activeYear}
               onChange={(e) => setActiveYear(e.target.value)}
-              className="bg-transparent text-[11px] font-black text-emerald-950 outline-none cursor-pointer"
+              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
             >
               {availableYears.length > 0 ? availableYears.map(y => <option key={y} value={y}>{y}</option>) : <option value={activeYear}>{activeYear}</option>}
             </select>
@@ -134,26 +136,31 @@ export default function Dashboard() {
       </header>
 
       {/* MAIN CONTENT GRID - SINGLE PAGE LAYOUT */}
-      <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-6">
+      <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-4">
 
         {/* KPI CARDS - Spanning Top row */}
         <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
           {[
-            { label: `${FULL_MONTHS[activeMonth]} Summary`, val: `₱ ${monthTotal.toLocaleString()}`, color: "emerald" },
-            { label: "Contributors", val: monthGivers, color: "zinc" },
-            { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, color: "zinc" },
-            { label: "Highest Single Gift", val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`, color: "zinc" }
+            { label: "Current Month Summary", val: `₱ ${monthTotal.toLocaleString()}` },
+            { label: "Contributors", val: monthGivers },
+            { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+            { label: "Highest Single Gift", val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`, subtitle: monthLargest?.giverName }
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
+            <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
               <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest mb-1">{stat.label}</span>
-              <span className="text-xl font-black text-emerald-950 tabular-nums leading-none">{stat.val}</span>
+              <div className="flex flex-col gap-1 overflow-hidden">
+                <span className="text-xl font-black text-emerald-950 tabular-nums leading-none">{stat.val}</span>
+                <span className={`text-[8px] font-black text-emerald-600/60 uppercase tracking-widest truncate h-3 flex items-center ${stat.subtitle ? 'opacity-100' : 'opacity-0'}`}>
+                  BY {stat.subtitle || 'N/A'}
+                </span>
+              </div>
             </div>
           ))}
         </div>
 
         {/* TREND GRAPH - Central Main Body */}
-        <div className="col-span-8 row-span-5 bg-white p-10 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-          <div className="flex justify-between items-center mb-10 shrink-0">
+        <div className="col-span-12 row-span-3 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-4 shrink-0">
             <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest flex items-center gap-3">
               <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
               Donation Trend Analysis ({activeYear})
@@ -176,30 +183,73 @@ export default function Dashboard() {
 
             {/* SVG Content */}
             <div className="absolute left-14 right-4 top-0 bottom-8">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 600 160">
-                <line x1="0" y1="80" x2="600" y2="80" stroke="#f1f5f9" strokeWidth="1" />
-                <line x1="0" y1="160" x2="600" y2="160" stroke="#f1f5f9" strokeWidth="1" />
-
-                <path d={`${generatePath()} L600,160 L0,160 Z`} fill="url(#trend-grad-full)" opacity="0.03" />
-                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" />
+              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}>
+                <line x1="0" y1="80" x2={GRAPH_WIDTH} y2="80" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="0" y1={GRAPH_HEIGHT} x2={GRAPH_WIDTH} y2={GRAPH_HEIGHT} stroke="#f1f5f9" strokeWidth="1" />
 
                 <defs>
-                  <linearGradient id="trend-grad-full" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#059669" />
-                    <stop offset="100%" stopColor="#ffffff" />
+                  <linearGradient id="trend-grad-area" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#059669" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
-                {monthlyStats.map((s, i) => (
-                  <circle
-                    key={i}
-                    cx={(i / 11) * 600}
-                    cy={160 - (s.total / yearMax) * 140}
-                    r={i === activeMonth ? "6" : "3"}
-                    fill={i === activeMonth ? "#059669" : "#ffffff"}
-                    stroke="#059669" strokeWidth={i === activeMonth ? "3" : "2"}
-                  />
-                ))}
+                <path d={`${generatePath()} L${GRAPH_WIDTH},${GRAPH_HEIGHT} L0,${GRAPH_HEIGHT} Z`} fill="url(#trend-grad-area)" />
+                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" />
+
+                {monthlyStats.map((s, i) => {
+                  const cx = (i / 11) * GRAPH_WIDTH;
+                  const cy = GRAPH_HEIGHT - (s.total / yearMax) * GRAPH_PLOT_HEIGHT;
+                  const isActive = i === activeMonth;
+                  const isHovered = hoveredMonth === i;
+
+                  return (
+                    <g 
+                      key={i} 
+                      onMouseEnter={() => setHoveredMonth(i)} 
+                      onMouseLeave={() => setHoveredMonth(null)}
+                      className="cursor-pointer group outline-none"
+                    >
+                      {/* Invisible larger circle to make hovering easier */}
+                      <circle cx={cx} cy={cy} r="18" fill="transparent" />
+                      
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={isActive || isHovered ? "5" : "3"}
+                        fill={isActive || isHovered ? "#059669" : "#ffffff"}
+                        stroke="#059669" strokeWidth={isActive || isHovered ? "2.5" : "1.5"}
+                        className="transition-all duration-300"
+                      />
+                      
+                      {/* Standard subtle label */}
+                      {!isHovered && s.total > 0 && (
+                        <text
+                          x={cx + 4}
+                          y={cy - (isActive ? 12 : 10)}
+                          textAnchor="start"
+                          className={`${isActive ? 'text-[8px] fill-emerald-800 font-black' : 'text-[6px] fill-emerald-600/50 font-bold'} tabular-nums transition-all pointer-events-none`}
+                        >
+                          ₱{s.total >= 1000 ? `${(s.total / 1000).toFixed(0)}k` : s.total}
+                        </text>
+                      )}
+
+                      {/* Interactive Rich Tooltip */}
+                      {isHovered && (
+                        <g className="pointer-events-none transition-all duration-200 ease-out z-50">
+                          <rect x={cx - 36} y={cy - 40} width="72" height="28" rx="5" fill="#022c22" className="drop-shadow-xl" />
+                          <polygon points={`${cx - 4},${cy - 12} ${cx + 4},${cy - 12} ${cx},${cy - 6}`} fill="#022c22" />
+                          <text x={cx} y={cy - 26} textAnchor="middle" fill="#ffffff" className="text-[9px] font-black tabular-nums">
+                            ₱{s.total.toLocaleString()}
+                          </text>
+                          <text x={cx} y={cy - 16} textAnchor="middle" fill="#6ee7b7" className="text-[5px] font-black uppercase tracking-widest">
+                            {s.count} tx • {s.givers} donors
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
               </svg>
             </div>
 
@@ -212,53 +262,6 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* SIDEBAR STACK - Ranking & Activity */}
-        <div className="col-span-4 row-span-5 flex flex-col gap-6 min-h-0 overflow-hidden">
-
-          {/* Power Ranking */}
-          <div className="flex-1 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col min-h-0 overflow-hidden">
-            <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 shrink-0">Department Power Ranking</h2>
-            <div className="flex-1 space-y-4 overflow-hidden">
-              {rankData.map((dept, i) => {
-                const perc = monthTotal > 0 ? (dept.total / monthTotal) * 100 : 0;
-                return (
-                  <div key={dept.name} className="group">
-                    <div className="flex justify-between items-end text-[10px] font-black text-emerald-950 uppercase tracking-tight mb-2 group-hover:text-emerald-600 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[8px] text-zinc-300 tabular-nums font-bold">0{i + 1}</span>
-                        <span className="truncate max-w-[100px] uppercase tracking-tighter">{dept.name}</span>
-                      </div>
-                      <span className="tabular-nums">₱ {dept.total.toLocaleString()}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-zinc-50 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${perc}%` }}></div>
-                    </div>
-                  </div>
-                );
-              })}
-              {rankData.length === 0 && <p className="text-center py-6 text-[8px] font-black italic text-zinc-300 uppercase">No Data</p>}
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="flex-1 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col min-h-0 overflow-hidden">
-            <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 shrink-0">Recent Activity</h2>
-            <div className="flex-1 space-y-3 overflow-hidden">
-              {donations.slice(0, 5).map((d) => (
-                <div key={d.id} className="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0 group">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-emerald-950 group-hover:text-emerald-600 transition-colors uppercase tabular-nums truncate max-w-[130px]">{d.giverName}</span>
-                    <span className="text-[8px] text-zinc-400 font-bold uppercase mt-0.5">{new Date(d.donationDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {d.groupName}</span>
-                  </div>
-                  <div className="text-[10px] font-black text-emerald-950 tabular-nums">₱ {d.amount.toLocaleString()}</div>
-                </div>
-              ))}
-              {donations.length === 0 && <p className="text-center py-6 text-[8px] font-black italic text-zinc-300 uppercase">No Contributions</p>}
-            </div>
-          </div>
-
         </div>
 
       </div>

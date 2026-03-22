@@ -1,3 +1,4 @@
+/* Last updated: 2026-03-22 12:35 PM UTC */
 @import "tailwindcss";
 
 :root {
@@ -31,7 +32,7 @@ body {
   border-right: 1px solid #f1f5f9;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Hover rule removed */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -41,7 +42,4 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #dcfce7;
   border-radius: 10px;
-}
-::-webkit-scrollbar-thumb :hover {
-  background: #bbf7d0;
 }

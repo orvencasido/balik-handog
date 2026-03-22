@@ -68,11 +68,11 @@ export default function DonationsList() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Scanning Ledger...</div>;
 
   return (
-    <div className="flex-1 space-y-6 font-sans max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+    <div className="flex-1 space-y-6 font-sans w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-emerald-950 tracking-tight leading-none uppercase">Records List</h1>
-          <p className="text-emerald-700/60 font-bold text-[10px] uppercase tracking-widest mt-2">
+          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Records List</h1>
+          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
             {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function DonationsList() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-zinc-50 border-b border-gray-100">

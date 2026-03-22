@@ -83,15 +83,15 @@ export default function AddDonation() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold italic">Checking access...</div>;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
-      <div className="w-full max-w-xl bg-white p-12 rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5">
-        <div className="mb-12 border-b border-gray-50 pb-8 text-center">
-          <h1 className="text-2xl font-black text-emerald-950 uppercase tracking-tight">Record Entry</h1>
-          <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest mt-2 px-1 border-t border-emerald-500/10 pt-2 inline-block">Balik Handog Ledger System</p>
+    <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-xl bg-white p-10 rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
+        <div className="mb-10 border-b border-gray-50 pb-6 text-center">
+          <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Record Entry</h1>
+          <p className="text-[8px] text-emerald-700/60 font-bold uppercase tracking-widest mt-1">Balik Handog Ledger System</p>
         </div>
 
         {status && (
-          <div className={`mb-8 p-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 ${
+          <div className={`mb-6 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 ${
             status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
           }`}>
             <span className={`h-2 w-2 rounded-full ${status.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
@@ -103,7 +103,7 @@ export default function AddDonation() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Full Name</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Full Name</label>
                 <input
                   type="text"
                   name="giverName"
@@ -115,7 +115,7 @@ export default function AddDonation() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
                 <input
                   type="number"
                   name="amount"
@@ -130,7 +130,7 @@ export default function AddDonation() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Organization / Ministry</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Organization / Ministry</label>
                 <select 
                   name="groupName"
                   value={formData.groupName}
@@ -145,7 +145,7 @@ export default function AddDonation() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Receipt Date</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Receipt Date</label>
                 <input
                   type="date"
                   name="donationDate"
@@ -157,7 +157,7 @@ export default function AddDonation() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Transaction Notes</label>
+              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Transaction Notes</label>
               <textarea
                 name="notes"
                 value={formData.notes}
@@ -171,7 +171,7 @@ export default function AddDonation() {
           <button
             type="submit"
             disabled={submitLoading}
-            className="w-full py-4.5 bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-700/10 disabled:opacity-50 mt-6"
+            className="w-full py-4 bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-700/10 disabled:opacity-50 mt-4"
           >
             {submitLoading ? "Processing..." : "Save Transaction"}
           </button>

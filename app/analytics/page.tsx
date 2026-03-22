@@ -117,26 +117,26 @@ export default function AnalyticsPage() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Processing Intelligence...</div>;
 
   return (
-    <div className="flex-1 space-y-8 font-sans max-w-7xl mx-auto">
+    <div className="flex-1 space-y-6 font-sans w-full">
       {/* Dynamic Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-emerald-950 tracking-tight leading-none uppercase">Advanced Analytics</h1>
-          <p className="text-emerald-700/60 font-bold text-[10px] uppercase tracking-widest mt-3">Depth telemetry and performance audit</p>
+          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Advanced Analytics</h1>
+          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">Depth telemetry and performance audit</p>
         </div>
 
-        <div className="flex flex-wrap gap-4">
-          <div className="bg-zinc-50 px-5 py-3 rounded-xl border border-gray-100 flex items-center gap-3">
-            <span className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest">Year :</span>
-            <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="bg-transparent text-xs font-black text-emerald-950 outline-none">
+        <div className="flex flex-wrap gap-3">
+          <div className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100 flex items-center gap-2">
+            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Year :</span>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="bg-transparent text-[10px] font-black text-emerald-950 outline-none">
               <option value="All">All Years</option>
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
 
-          <div className="bg-zinc-50 px-5 py-3 rounded-xl border border-gray-100 flex items-center gap-3">
-            <span className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest">Dept :</span>
-            <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="bg-transparent text-xs font-black text-emerald-950 outline-none max-w-[140px]">
+          <div className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100 flex items-center gap-2">
+            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Dept :</span>
+            <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="bg-transparent text-[10px] font-black text-emerald-950 outline-none max-w-[140px]">
               <option value="All">All Departments</option>
               {departments.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -145,24 +145,24 @@ export default function AnalyticsPage() {
       </header>
 
       {/* Primary KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { label: "Aggregate Value", val: `₱ ${totalAmount.toLocaleString()}` },
           { label: "Mean Contribution", val: `₱ ${avgDonation.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
           { label: "Ledger Entries", val: filteredDonations.length },
           { label: "Active Donors", val: Object.keys(contributorMap).length }
         ].map((s, i) => (
-          <div key={i} className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm group hover:border-emerald-200 transition-all">
-            <h3 className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none mb-3">{s.label}</h3>
-            <p className="text-2xl font-black text-emerald-950 group-hover:text-emerald-600 transition-colors">{s.val}</p>
+          <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-emerald-200 transition-all">
+            <h3 className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none mb-1">{s.label}</h3>
+            <p className="text-xl font-black text-emerald-950 tabular-nums group-hover:text-emerald-600 transition-colors">{s.val}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Trend Detailed */}
-        <div className="bg-white p-10 rounded-3xl border border-gray-100 shadow-sm">
-          <h2 className="text-sm font-black text-emerald-950 uppercase tracking-widest mb-10 flex items-center gap-3">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 flex items-center gap-3">
             <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
             Monthly Scaled Projection
           </h2>
@@ -189,8 +189,8 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top Givers Audit */}
-        <div className="bg-white p-10 rounded-3xl border border-gray-100 shadow-sm">
-          <h2 className="text-sm font-black text-emerald-950 uppercase tracking-widest mb-10 flex items-center gap-3">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 flex items-center gap-3">
             <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
             Apex Contributors (Top 5)
           </h2>
@@ -212,10 +212,10 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Day of Week Analysis */}
-        <div className="bg-white p-10 rounded-3xl border border-gray-100 shadow-sm">
-          <h2 className="text-sm font-black text-emerald-950 uppercase tracking-widest mb-8">Weekly Heatmap</h2>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6">Weekly Heatmap</h2>
           <div className="space-y-4">
             {days.map(day => {
               const amount = dayMap[day] || 0;
@@ -236,17 +236,17 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Sector Ranking */}
-        <div className="lg:col-span-2 bg-emerald-900 p-10 rounded-3xl shadow-xl shadow-emerald-900/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <svg className="w-40 h-40 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <div className="lg:col-span-2 bg-emerald-900 p-6 rounded-2xl shadow-xl shadow-emerald-900/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-10">
+            <svg className="w-32 h-32 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.45 12.15l-1.45 1.45-1.45-1.45c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l2.15 2.15c.39.39 1.02.39 1.41 0l2.15-2.15c.39-.39.39-1.02 0-1.41-.39-.4-.1.39-1.4-.39z" />
             </svg>
           </div>
-          <h2 className="text-sm font-black text-white uppercase tracking-widest mb-10 flex items-center gap-3">
+          <h2 className="text-[10px] font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
             <span className="h-4 w-1 bg-emerald-400 rounded-full"></span>
             Department Power Ranking
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {deptRanking.map((dept: any, i) => (
               <div key={dept.name} className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all">
                 <div className="flex justify-between items-start mb-4">
