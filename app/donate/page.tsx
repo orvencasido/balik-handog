@@ -39,7 +39,7 @@ export default function AddDonation() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
+
     setSubmitLoading(true);
     setStatus(null);
 
@@ -91,9 +91,8 @@ export default function AddDonation() {
         </div>
 
         {status && (
-          <div className={`mb-6 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 ${
-            status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-          }`}>
+          <div className={`mb-6 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+            }`}>
             <span className={`h-2 w-2 rounded-full ${status.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
             {status.message}
           </div>
@@ -131,7 +130,7 @@ export default function AddDonation() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Organization / Ministry</label>
-                <select 
+                <select
                   name="groupName"
                   value={formData.groupName}
                   onChange={handleInputChange}
@@ -155,7 +154,7 @@ export default function AddDonation() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Transaction Notes</label>
               <textarea
