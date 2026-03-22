@@ -183,9 +183,9 @@ export default function Dashboard() {
 
             {/* SVG Content */}
             <div className="absolute left-14 right-4 top-0 bottom-8">
-              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}>
-                <line x1="0" y1="80" x2={GRAPH_WIDTH} y2="80" stroke="#f1f5f9" strokeWidth="1" />
-                <line x1="0" y1={GRAPH_HEIGHT} x2={GRAPH_WIDTH} y2={GRAPH_HEIGHT} stroke="#f1f5f9" strokeWidth="1" />
+              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`} preserveAspectRatio="none">
+                <line x1="0" y1="80" x2={GRAPH_WIDTH} y2="80" stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={GRAPH_HEIGHT} x2={GRAPH_WIDTH} y2={GRAPH_HEIGHT} stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
                 <defs>
                   <linearGradient id="trend-grad-area" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -195,62 +195,68 @@ export default function Dashboard() {
                 </defs>
 
                 <path d={`${generatePath()} L${GRAPH_WIDTH},${GRAPH_HEIGHT} L0,${GRAPH_HEIGHT} Z`} fill="url(#trend-grad-area)" />
-                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" />
+                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+              </svg>
 
+              {/* HTML Overlay for Points and Tooltips */}
+              <div className="absolute inset-0 pointer-events-none">
                 {monthlyStats.map((s, i) => {
-                  const cx = (i / 11) * GRAPH_WIDTH;
-                  const cy = GRAPH_HEIGHT - (s.total / yearMax) * GRAPH_PLOT_HEIGHT;
+                  const leftPercentage = (i / 11) * 100;
+                  const topPercentage = (1 - (s.total / yearMax) * (GRAPH_PLOT_HEIGHT / GRAPH_HEIGHT)) * 100;
                   const isActive = i === activeMonth;
                   const isHovered = hoveredMonth === i;
 
                   return (
-                    <g 
-                      key={i} 
-                      onMouseEnter={() => setHoveredMonth(i)} 
+                    <div
+                      key={i}
+                      className="absolute pointer-events-auto cursor-pointer flex justify-center items-center group z-10"
+                      style={{
+                        left: `${leftPercentage}%`,
+                        top: `${topPercentage}%`,
+                        width: '36px', height: '36px',
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                      onMouseEnter={() => setHoveredMonth(i)}
                       onMouseLeave={() => setHoveredMonth(null)}
-                      className="cursor-pointer group outline-none"
                     >
-                      {/* Invisible larger circle to make hovering easier */}
-                      <circle cx={cx} cy={cy} r="18" fill="transparent" />
-                      
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={isActive || isHovered ? "5" : "3"}
-                        fill={isActive || isHovered ? "#059669" : "#ffffff"}
-                        stroke="#059669" strokeWidth={isActive || isHovered ? "2.5" : "1.5"}
-                        className="transition-all duration-300"
+                      <div
+                        className={`rounded-full border-[#059669] transition-all duration-300 absolute box-border ${isActive || isHovered
+                            ? "bg-[#059669] border-[2.5px] w-[10px] h-[10px]"
+                            : "bg-white border-[1.5px] w-[6px] h-[6px]"
+                          }`}
                       />
-                      
-                      {/* Standard subtle label */}
+
                       {!isHovered && s.total > 0 && (
-                        <text
-                          x={cx + 4}
-                          y={cy - (isActive ? 12 : 10)}
-                          textAnchor="start"
-                          className={`${isActive ? 'text-[8px] fill-emerald-800 font-black' : 'text-[6px] fill-emerald-600/50 font-bold'} tabular-nums transition-all pointer-events-none`}
+                        <div
+                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[8px] text-emerald-800 font-black' : 'text-[6px] text-emerald-600/50 font-bold'
+                            }`}
+                          style={{
+                            left: '50%', top: '50%',
+                            transform: `translate(6px, ${isActive ? '-12px' : '-10px'})`
+                          }}
                         >
                           ₱{s.total >= 1000 ? `${(s.total / 1000).toFixed(0)}k` : s.total}
-                        </text>
+                        </div>
                       )}
 
-                      {/* Interactive Rich Tooltip */}
                       {isHovered && (
-                        <g className="pointer-events-none transition-all duration-200 ease-out z-50">
-                          <rect x={cx - 36} y={cy - 40} width="72" height="28" rx="5" fill="#022c22" className="drop-shadow-xl" />
-                          <polygon points={`${cx - 4},${cy - 12} ${cx + 4},${cy - 12} ${cx},${cy - 6}`} fill="#022c22" />
-                          <text x={cx} y={cy - 26} textAnchor="middle" fill="#ffffff" className="text-[9px] font-black tabular-nums">
+                        <div
+                          className="absolute flex flex-col items-center justify-center bg-[#022c22] rounded-[5px] drop-shadow-xl pointer-events-none z-50 w-[72px] h-[28px]"
+                          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -40px)' }}
+                        >
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-[#022c22]" />
+                          <div className="text-[9px] font-black text-white tabular-nums leading-none">
                             ₱{s.total.toLocaleString()}
-                          </text>
-                          <text x={cx} y={cy - 16} textAnchor="middle" fill="#6ee7b7" className="text-[5px] font-black uppercase tracking-widest">
+                          </div>
+                          <div className="text-[5px] font-black text-[#6ee7b7] uppercase tracking-widest leading-none mt-1">
                             {s.count} tx • {s.givers} donors
-                          </text>
-                        </g>
+                          </div>
+                        </div>
                       )}
-                    </g>
+                    </div>
                   );
                 })}
-              </svg>
+              </div>
             </div>
 
             {/* X-Axis labels */}
