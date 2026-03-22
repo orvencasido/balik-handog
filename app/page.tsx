@@ -1,19 +1,8 @@
 "use client";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../src/lib/firebase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-export async function login(email: string, password: string) {
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    return cred.user;
-  } catch (error: any) {
-    console.error("Login failed:", error);
-    throw error;
-  }
-}
+import { login } from "../src/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,6 +28,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-zinc-50 font-sans">
       <div className="w-full max-w-sm space-y-12">
+        {/* ---------- Branding ---------- */}
         <div className="text-center space-y-6">
            <div className="bg-emerald-600 p-2 w-fit rounded-xl shadow-xl mx-auto shadow-emerald-700/20 group hover:rotate-[360deg] transition-transform duration-1000">
               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -50,15 +40,16 @@ export default function LoginPage() {
               <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Ledger Access</p>
            </div>
         </div>
-        
+
+        {/* ---------- Login Form ---------- */}
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-xl bg-red-50 p-4 text-[10px] font-black uppercase tracking-widest text-red-800 flex items-center justify-center gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
               {error}
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Administrative Email</label>

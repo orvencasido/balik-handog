@@ -1,171 +1,151 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../../src/lib/firebase/client";
+import { useState } from "react";
+import { useAuthGuard } from "../../src/lib/useAuthGuard";
+import { useDonations } from "../../src/lib/useDonations";
+import { MONTHS, FULL_MONTHS } from "../../src/lib/constants";
+import PageHeader from "../components/PageHeader";
+import KpiCard from "../components/KpiCard";
+import LoadingScreen from "../components/LoadingScreen";
 
-interface Donation {
-  id: string;
-  giverName: string;
-  amount: number;
-  groupName: string;
-  donationDate: string;
-}
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+/* ------------------------------------------------------------------ */
+/*  Graph constants                                                    */
+/* ------------------------------------------------------------------ */
+const GRAPH_WIDTH = 420;
+const GRAPH_HEIGHT = 160;
+const GRAPH_PLOT_HEIGHT = 140;
 
 export default function Dashboard() {
-  const router = useRouter();
-  const [donations, setDonations] = useState<Donation[]>([]);
-  const [loading, setLoading] = useState(true);
+  useAuthGuard();
+  const { donations, loading } = useDonations({
+    orderByField: "donationDate",
+    direction: "desc",
+    maxResults: 500,
+  });
 
   const now = new Date();
   const [activeYear, setActiveYear] = useState<string>(now.getFullYear().toString());
   const [activeMonth, setActiveMonth] = useState<number>(now.getMonth());
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) router.push("/");
-    });
+  /* ---------------------------------------------------------------- */
+  /*  Derived data                                                     */
+  /* ---------------------------------------------------------------- */
+  const yearFiltered = donations.filter(
+    (d) => new Date(d.donationDate).getFullYear().toString() === activeYear
+  );
 
-    // We keep a sufficient limit for recent contributions and filtering
-    const donationsQuery = query(
-      collection(db, "donations"),
-      orderBy("donationDate", "desc"),
-      limit(500)
-    );
+  const monthFiltered = yearFiltered.filter(
+    (d) => new Date(d.donationDate).getMonth() === activeMonth
+  );
 
-    const unsubscribeDonations = onSnapshot(donationsQuery, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Donation[];
-      setDonations(data);
-      setLoading(false);
-    });
+  const availableYears = Array.from(
+    new Set(donations.map((d) => new Date(d.donationDate).getFullYear().toString()))
+  )
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a));
 
-    return () => {
-      unsubscribeAuth();
-      unsubscribeDonations();
-    };
-  }, [router]);
-
-  // DERIVED DATA
-  const monthFiltered = donations.filter(d => {
-    const date = new Date(d.donationDate);
-    return date.getFullYear().toString() === activeYear && date.getMonth() === activeMonth;
-  });
-
-  const yearFiltered = donations.filter(d => {
-    return new Date(d.donationDate).getFullYear().toString() === activeYear;
-  });
-
-  const availableYears = Array.from(new Set(donations.map(d => new Date(d.donationDate).getFullYear().toString()))).filter(Boolean).sort((a, b) => b.localeCompare(a));
-
-  const monthTotal = monthFiltered.reduce((acc, curr) => acc + curr.amount, 0);
-  const monthGivers = new Set(monthFiltered.map(d => d.giverName)).size;
+  /* KPI values */
+  const monthTotal = monthFiltered.reduce((acc, d) => acc + d.amount, 0);
+  const monthGivers = new Set(monthFiltered.map((d) => d.giverName)).size;
   const monthAvg = monthFiltered.length > 0 ? monthTotal / monthFiltered.length : 0;
-  const monthLargest = monthFiltered.length > 0 ? [...monthFiltered].sort((a, b) => b.amount - a.amount)[0] : null;
+  const monthLargest =
+    monthFiltered.length > 0
+      ? [...monthFiltered].sort((a, b) => b.amount - a.amount)[0]
+      : null;
 
+  /* Monthly stats for the graph */
   const monthlyStats = MONTHS.map((name, index) => {
-    const txs = yearFiltered.filter(d => new Date(d.donationDate).getMonth() === index);
-    const total = txs.reduce((acc, curr) => acc + curr.amount, 0);
+    const txs = yearFiltered.filter((d) => new Date(d.donationDate).getMonth() === index);
+    const total = txs.reduce((acc, d) => acc + d.amount, 0);
     const count = txs.length;
-    const givers = new Set(txs.map(d => d.giverName)).size;
+    const givers = new Set(txs.map((d) => d.giverName)).size;
     return { name, total, count, givers };
   });
 
-  const yearMax = Math.max(...monthlyStats.map(s => s.total), 1);
-  const GRAPH_WIDTH = 420;
-  const GRAPH_HEIGHT = 160;
-  const GRAPH_PLOT_HEIGHT = 140;
+  const yearMax = Math.max(...monthlyStats.map((s) => s.total), 1);
 
+  /* SVG path generator (smooth Bézier) */
   const generatePath = () => {
-    if (monthlyStats.length === 0) return "";
-    return monthlyStats.map((s, i) => {
-      const x = (i / 11) * GRAPH_WIDTH;
-      const y = GRAPH_HEIGHT - (s.total / yearMax) * GRAPH_PLOT_HEIGHT;
-      if (i === 0) return `M${x},${y}`;
-      const prevX = ((i - 1) / 11) * GRAPH_WIDTH;
-      const prevY = GRAPH_HEIGHT - (monthlyStats[i - 1].total / yearMax) * GRAPH_PLOT_HEIGHT;
-      const cpX = prevX + (x - prevX) / 2;
-      return `C${cpX},${prevY} ${cpX},${y} ${x},${y}`;
-    }).join(" ");
+    return monthlyStats
+      .map((s, i) => {
+        const x = (i / 11) * GRAPH_WIDTH;
+        const y = GRAPH_HEIGHT - (s.total / yearMax) * GRAPH_PLOT_HEIGHT;
+        if (i === 0) return `M${x},${y}`;
+        const prevX = ((i - 1) / 11) * GRAPH_WIDTH;
+        const prevY = GRAPH_HEIGHT - (monthlyStats[i - 1].total / yearMax) * GRAPH_PLOT_HEIGHT;
+        const cpX = prevX + (x - prevX) / 2;
+        return `C${cpX},${prevY} ${cpX},${y} ${x},${y}`;
+      })
+      .join(" ");
   };
 
+  /* ---------------------------------------------------------------- */
+  /*  Render                                                           */
+  /* ---------------------------------------------------------------- */
+  if (loading) return <LoadingScreen message="Initializing Dashboard..." />;
 
-
-  if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Initializing Dashboard...</div>;
+  const kpiCards = [
+    { label: "Current Month Summary", val: `₱ ${monthTotal.toLocaleString()}` },
+    { label: "Contributors", val: monthGivers },
+    { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+    { label: "Highest Single Gift", val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`, subtitle: monthLargest?.giverName },
+  ];
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden gap-6 font-sans w-full bg-white">
-
-      {/* 1. COMPACT HEADER */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
-        <div>
-          <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
-          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+      {/* ---------- Header with filters ---------- */}
+      <PageHeader
+        title="Dashboard"
+        subtitle={`${FULL_MONTHS[activeMonth]} Activity • ${activeYear}`}
+      >
+        {/* Month selector */}
+        <div className="flex items-center gap-2 bg-emerald-600 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-700/10">
+          <span className="text-[8px] font-black text-white/50 uppercase">Month:</span>
+          <select
+            value={activeMonth}
+            onChange={(e) => setActiveMonth(parseInt(e.target.value))}
+            className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
+          >
+            {FULL_MONTHS.map((m, i) => (
+              <option key={m} value={i} className="text-emerald-950">{m}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-emerald-600 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-700/10">
-            <span className="text-[8px] font-black text-white/50 uppercase">Month:</span>
-            <select
-              value={activeMonth}
-              onChange={(e) => setActiveMonth(parseInt(e.target.value))}
-              className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
-            >
-              {FULL_MONTHS.map((m, i) => <option key={m} value={i} className="text-emerald-950">{m}</option>)}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
-            <select
-              value={activeYear}
-              onChange={(e) => setActiveYear(e.target.value)}
-              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
-            >
-              {availableYears.length > 0 ? availableYears.map(y => <option key={y} value={y}>{y}</option>) : <option value={activeYear}>{activeYear}</option>}
-            </select>
-          </div>
+        {/* Year selector */}
+        <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
+          <select
+            value={activeYear}
+            onChange={(e) => setActiveYear(e.target.value)}
+            className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
+          >
+            {availableYears.length > 0
+              ? availableYears.map((y) => <option key={y} value={y}>{y}</option>)
+              : <option value={activeYear}>{activeYear}</option>}
+          </select>
         </div>
-      </header>
+      </PageHeader>
 
-      {/* MAIN CONTENT GRID - SINGLE PAGE LAYOUT */}
+      {/* ---------- Main content grid ---------- */}
       <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-4">
-
-        {/* KPI CARDS - Spanning Top row */}
+        {/* KPI Cards */}
         <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
-          {[
-            { label: "Current Month Summary", val: `₱ ${monthTotal.toLocaleString()}` },
-            { label: "Contributors", val: monthGivers },
-            { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
-            { label: "Highest Single Gift", val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`, subtitle: monthLargest?.giverName }
-          ].map((stat, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
-              <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest mb-1">{stat.label}</span>
-              <div className="flex flex-col gap-1 overflow-hidden">
-                <span className="text-xl font-black text-emerald-950 tabular-nums leading-none">{stat.val}</span>
-                <span className={`text-[8px] font-black text-emerald-600/60 uppercase tracking-widest truncate h-3 flex items-center ${stat.subtitle ? 'opacity-100' : 'opacity-0'}`}>
-                  BY {stat.subtitle || 'N/A'}
-                </span>
-              </div>
-            </div>
+          {kpiCards.map((stat, i) => (
+            <KpiCard key={i} {...stat} />
           ))}
         </div>
 
-        {/* TREND GRAPH - Central Main Body */}
+        {/* ---------- Trend Graph ---------- */}
         <div className="col-span-12 row-span-3 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4 shrink-0">
             <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest flex items-center gap-3">
-              <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
+              <span className="h-4 w-1 bg-emerald-600 rounded-full" />
               Donation Trend Analysis ({activeYear})
             </h2>
-            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums">Peak: ₱{yearMax.toLocaleString()}</div>
+            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums">
+              Peak: ₱{yearMax.toLocaleString()}
+            </div>
           </div>
 
           <div className="flex-1 relative min-h-0">
@@ -181,9 +161,13 @@ export default function Dashboard() {
               })}
             </div>
 
-            {/* SVG Content */}
+            {/* SVG chart */}
             <div className="absolute left-14 right-4 top-0 bottom-8">
-              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`} preserveAspectRatio="none">
+              <svg
+                className="w-full h-full overflow-visible"
+                viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
+                preserveAspectRatio="none"
+              >
                 <line x1="0" y1="80" x2={GRAPH_WIDTH} y2="80" stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 <line x1="0" y1={GRAPH_HEIGHT} x2={GRAPH_WIDTH} y2={GRAPH_HEIGHT} stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
@@ -198,11 +182,11 @@ export default function Dashboard() {
                 <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
               </svg>
 
-              {/* HTML Overlay for Points and Tooltips */}
+              {/* Interactive data points */}
               <div className="absolute inset-0 pointer-events-none">
                 {monthlyStats.map((s, i) => {
-                  const leftPercentage = (i / 11) * 100;
-                  const topPercentage = (1 - (s.total / yearMax) * (GRAPH_PLOT_HEIGHT / GRAPH_HEIGHT)) * 100;
+                  const leftPct = (i / 11) * 100;
+                  const topPct = (1 - (s.total / yearMax) * (GRAPH_PLOT_HEIGHT / GRAPH_HEIGHT)) * 100;
                   const isActive = i === activeMonth;
                   const isHovered = hoveredMonth === i;
 
@@ -211,14 +195,16 @@ export default function Dashboard() {
                       key={i}
                       className="absolute pointer-events-auto cursor-pointer flex justify-center items-center group z-10"
                       style={{
-                        left: `${leftPercentage}%`,
-                        top: `${topPercentage}%`,
-                        width: '36px', height: '36px',
-                        transform: 'translate(-50%, -50%)'
+                        left: `${leftPct}%`,
+                        top: `${topPct}%`,
+                        width: "36px",
+                        height: "36px",
+                        transform: "translate(-50%, -50%)",
                       }}
                       onMouseEnter={() => setHoveredMonth(i)}
                       onMouseLeave={() => setHoveredMonth(null)}
                     >
+                      {/* Dot */}
                       <div
                         className={`rounded-full border-[#059669] transition-all duration-300 absolute box-border ${isActive || isHovered
                             ? "bg-[#059669] border-[2.5px] w-[10px] h-[10px]"
@@ -226,23 +212,28 @@ export default function Dashboard() {
                           }`}
                       />
 
+                      {/* Inline label */}
                       {!isHovered && s.total > 0 && (
                         <div
-                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[8px] text-emerald-800 font-black' : 'text-[6px] text-emerald-600/50 font-bold'
+                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive
+                              ? "text-[8px] text-emerald-800 font-black"
+                              : "text-[6px] text-emerald-600/50 font-bold"
                             }`}
                           style={{
-                            left: '50%', top: '50%',
-                            transform: `translate(6px, ${isActive ? '-12px' : '-10px'})`
+                            left: "50%",
+                            top: "50%",
+                            transform: `translate(6px, ${isActive ? "-12px" : "-10px"})`,
                           }}
                         >
                           ₱{s.total >= 1000 ? `${(s.total / 1000).toFixed(0)}k` : s.total}
                         </div>
                       )}
 
+                      {/* Hover tooltip */}
                       {isHovered && (
                         <div
                           className="absolute flex flex-col items-center justify-center bg-[#022c22] rounded-[5px] drop-shadow-xl pointer-events-none z-50 w-[72px] h-[28px]"
-                          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -40px)' }}
+                          style={{ left: "50%", top: "50%", transform: "translate(-50%, -40px)" }}
                         >
                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-[#022c22]" />
                           <div className="text-[9px] font-black text-white tabular-nums leading-none">
@@ -262,14 +253,19 @@ export default function Dashboard() {
             {/* X-Axis labels */}
             <div className="absolute left-14 right-4 bottom-0 flex justify-between px-1">
               {MONTHS.map((name, i) => (
-                <span key={i} className={`text-[9px] font-black uppercase ${i === activeMonth ? 'text-emerald-700 underline underline-offset-4 decoration-2' : 'text-zinc-300'}`}>
+                <span
+                  key={i}
+                  className={`text-[9px] font-black uppercase ${i === activeMonth
+                      ? "text-emerald-700 underline underline-offset-4 decoration-2"
+                      : "text-zinc-300"
+                    }`}
+                >
                   {name}
                 </span>
               ))}
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

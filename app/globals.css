@@ -32,6 +32,35 @@ body {
   border-right: 1px solid #f1f5f9;
 }
 
+/* Premium Modern Form Input */
+.modern-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(228, 228, 231, 0.8);
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #18181b;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01) inset;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modern-input:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.modern-input::placeholder {
+  color: #a1a1aa;
+  font-weight: 500;
+}
+.modern-input:focus {
+  background: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
+}
+
 /* Custom Scrollbar - Hover rule removed */
 ::-webkit-scrollbar {
   width: 6px;

@@ -1,39 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "../../src/lib/firebase/client";
+import { db } from "../../src/lib/firebase/client";
+import { useAuthGuard } from "../../src/lib/useAuthGuard";
+import { MINISTRY_OPTIONS } from "../../src/lib/constants";
+import LoadingScreen from "../components/LoadingScreen";
+
+/* ------------------------------------------------------------------ */
+/*  Form defaults                                                      */
+/* ------------------------------------------------------------------ */
+const INITIAL_FORM_DATA = {
+  giverName: "",
+  groupId: "YTH",
+  groupName: "Youth Ministry",
+  amount: "",
+  donationDate: new Date().toISOString().split("T")[0],
+  notes: "",
+};
 
 export default function AddDonation() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuthGuard();
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
-  const [formData, setFormData] = useState({
-    giverName: "",
-    groupId: "YTH",
-    groupName: "Youth Ministry",
-    amount: "",
-    donationDate: new Date().toISOString().split('T')[0],
-    notes: ""
-  });
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) router.push("/");
-      else setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  /* ---------------------------------------------------------------- */
+  /*  Handlers                                                         */
+  /* ---------------------------------------------------------------- */
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +46,7 @@ export default function AddDonation() {
       const date = new Date(formData.donationDate);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
-      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+      const monthKey = `${year}-${String(month).padStart(2, "0")}`;
 
       await addDoc(collection(db, "donations"), {
         giverName: formData.giverName,
@@ -56,126 +55,190 @@ export default function AddDonation() {
         groupName: formData.groupName,
         amount: Number(formData.amount),
         donationDate: formData.donationDate,
-        monthKey: monthKey,
-        year: year,
-        month: month,
+        monthKey,
+        year,
+        month,
         notes: formData.notes,
         encodedByUid: user.uid,
         createdAt: serverTimestamp(),
       });
 
-      setStatus({ type: 'success', message: "Donation record saved." });
-      setFormData({
-        giverName: "",
-        groupId: "YTH",
-        groupName: "Youth Ministry",
-        amount: "",
-        donationDate: new Date().toISOString().split('T')[0],
-        notes: ""
-      });
+      setStatus({ type: "success", message: "Donation record successfully secured." });
+      setFormData({ ...INITIAL_FORM_DATA, donationDate: new Date().toISOString().split("T")[0] });
+      
+      // Auto-hide status after 3 seconds
+      setTimeout(() => setStatus(null), 3000);
     } catch (err: any) {
-      setStatus({ type: 'error', message: err.message || "Save failed." });
+      setStatus({ type: "error", message: err.message || "Failed to secure transaction." });
     } finally {
       setSubmitLoading(false);
     }
   };
 
-  if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold italic">Checking access...</div>;
+  /* ---------------------------------------------------------------- */
+  /*  Render                                                           */
+  /* ---------------------------------------------------------------- */
+  if (loading) return <LoadingScreen message="Checking access clearance..." />;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-white p-10 rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
-        <div className="mb-10 border-b border-gray-50 pb-6 text-center">
-          <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Record Entry</h1>
-          <p className="text-[8px] text-emerald-700/60 font-bold uppercase tracking-widest mt-1">Balik Handog Ledger System</p>
+    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative min-h-full">
+      {/* Modern Ambient Background Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-400/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-300/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="w-full max-w-2xl relative z-10 transition-all duration-500 ease-out animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-white/70 backdrop-blur-2xl p-8 sm:p-12 rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-900/5 relative overflow-hidden">
+          
+          {/* Decorative Top Accent */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
+
+          {/* ---------- Title Area ---------- */}
+          <div className="mb-12 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-50 to-teal-50/20 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm mb-6 rotate-3">
+              <svg className="w-8 h-8 text-emerald-600 -rotate-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">Record Entry</h1>
+            <p className="text-sm text-zinc-500 font-medium mt-2">Initialize a new secure transaction into the Balik Handog Ledger.</p>
+          </div>
+
+          {/* ---------- Status banner ---------- */}
+          <div className={`transition-all duration-300 overflow-hidden ${status ? "max-h-20 opacity-100 mb-8" : "max-h-0 opacity-0 mb-0"}`}>
+            {status && (
+              <div
+                className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 border ${
+                  status.type === "success" 
+                    ? "bg-emerald-50/50 text-emerald-700 border-emerald-100" 
+                    : "bg-red-50/50 text-red-700 border-red-100"
+                }`}
+              >
+                <span className={`flex shrink-0 h-2.5 w-2.5 rounded-full ${status.type === "success" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"}`} />
+                {status.message}
+              </div>
+            )}
+          </div>
+
+          {/* ---------- Form ---------- */}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-8">
+              {/* Row 1: Name + Amount */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Donor Full Name" required>
+                  <input
+                    type="text"
+                    name="giverName"
+                    value={formData.giverName}
+                    onChange={handleInputChange}
+                    className="modern-input"
+                    required
+                    placeholder="e.g. Maria Clara"
+                  />
+                </FormField>
+
+                <FormField label="Amount (₱)" required>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-medium group-focus-within:text-emerald-500 transition-colors">₱</span>
+                    <input
+                      type="number"
+                      name="amount"
+                      value={formData.amount}
+                      onChange={handleInputChange}
+                      className="modern-input pl-9 tabular-nums tracking-tight"
+                      required
+                      placeholder="0.00"
+                    />
+                  </div>
+                </FormField>
+              </div>
+
+              {/* Row 2: Ministry + Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Organization / Ministry" required>
+                  <div className="relative">
+                    <select
+                      name="groupName"
+                      value={formData.groupName}
+                      onChange={handleInputChange}
+                      className="modern-input appearance-none pr-10"
+                    >
+                      {MINISTRY_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </FormField>
+
+                <FormField label="Receipt Date" required>
+                  <input
+                    type="date"
+                    name="donationDate"
+                    value={formData.donationDate}
+                    onChange={handleInputChange}
+                    className="modern-input tabular-nums tracking-tight"
+                    required
+                  />
+                </FormField>
+              </div>
+
+              {/* Row 3: Notes */}
+              <FormField label="Transaction Notes">
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  className="modern-input min-h-[120px] resize-y py-4 leading-relaxed"
+                  placeholder="Additional context or remarks about this contribution..."
+                />
+              </FormField>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={submitLoading}
+                className="w-full sm:w-auto min-w-[200px] float-right py-4 px-8 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl text-sm font-bold shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_25px_rgb(0,0,0,0.15)] transform active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-2 group"
+              >
+                {submitLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processing encryption...
+                  </>
+                ) : (
+                  <>
+                    Commit Transaction
+                    <svg className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </>
+                )}
+              </button>
+              <div className="clear-both" />
+            </div>
+          </form>
         </div>
-
-        {status && (
-          <div className={`mb-6 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-            }`}>
-            <span className={`h-2 w-2 rounded-full ${status.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-            {status.message}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Full Name</label>
-                <input
-                  type="text"
-                  name="giverName"
-                  value={formData.giverName}
-                  onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
-                  required
-                  placeholder="e.g. Maria Clara"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
-                  required
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Organization / Ministry</label>
-                <select
-                  name="groupName"
-                  value={formData.groupName}
-                  onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                >
-                  <option value="Worship Dept.">Worship Dept.</option>
-                  <option value="Music Ministry">Music Ministry</option>
-                  <option value="Youth Ministry">Youth Ministry</option>
-                  <option value="Outreach">Outreach</option>
-                  <option value="General Fund">General Fund</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Receipt Date</label>
-                <input
-                  type="date"
-                  name="donationDate"
-                  value={formData.donationDate}
-                  onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Transaction Notes</label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl h-24 text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
-                placeholder="Notes about this contribution..."
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitLoading}
-            className="w-full py-4 bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-700/10 disabled:opacity-50 mt-4"
-          >
-            {submitLoading ? "Processing..." : "Save Transaction"}
-          </button>
-        </form>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sub-component: Modern Form Field wrapper                           */
+/* ------------------------------------------------------------------ */
+function FormField({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+  return (
+    <div className="space-y-2.5 flex flex-col group">
+      <label className="text-xs font-bold text-zinc-600 tracking-wide flex items-center gap-1.5 ml-1 transition-colors group-focus-within:text-emerald-700">
+        {label}
+        {required && <span className="text-emerald-500 font-bold">*</span>}
+      </label>
+      {children}
     </div>
   );
 }

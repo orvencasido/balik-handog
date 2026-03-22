@@ -1,233 +1,221 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "../../src/lib/firebase/client";
-
-interface Donation {
-  id: string;
-  giverName: string;
-  amount: number;
-  groupName: string;
-  donationDate: string;
-  monthKey: string;
-}
+import { useState } from "react";
+import { useAuthGuard } from "../../src/lib/useAuthGuard";
+import { useDonations } from "../../src/lib/useDonations";
+import { WEEKDAYS } from "../../src/lib/constants";
+import PageHeader from "../components/PageHeader";
+import KpiCard from "../components/KpiCard";
+import SectionHeader from "../components/SectionHeader";
+import ProgressBar from "../components/ProgressBar";
+import EmptyState from "../components/EmptyState";
+import LoadingScreen from "../components/LoadingScreen";
 
 export default function AnalyticsPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [donations, setDonations] = useState<Donation[]>([]);
-  const [loading, setLoading] = useState(true);
+  useAuthGuard();
+  const { donations, loading } = useDonations({
+    orderByField: "donationDate",
+    direction: "asc",
+  });
 
-  // Advanced Filters
   const [selectedYear, setSelectedYear] = useState<string>("All");
   const [selectedDept, setSelectedDept] = useState<string>("All");
 
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) router.push("/");
-      else setUser(currentUser);
-    });
+  /* ---------------------------------------------------------------- */
+  /*  Filter options (derived from data)                               */
+  /* ---------------------------------------------------------------- */
+  const years = Array.from(
+    new Set(donations.map((d) => new Date(d.donationDate).getFullYear().toString()))
+  )
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a));
 
-    const donationsQuery = query(
-      collection(db, "donations"),
-      orderBy("donationDate", "asc")
-    );
+  const departments = Array.from(new Set(donations.map((d) => d.groupName)))
+    .filter(Boolean)
+    .sort();
 
-    const unsubscribeDonations = onSnapshot(donationsQuery, (snapshot) => {
-      const donationData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Donation[];
-      setDonations(donationData);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribeAuth();
-      unsubscribeDonations();
-    };
-  }, [router]);
-
-  // Derived Options
-  const years = Array.from(new Set(donations.map(d => new Date(d.donationDate).getFullYear().toString()))).filter(Boolean).sort((a, b) => b.localeCompare(a));
-  const departments = Array.from(new Set(donations.map(d => d.groupName))).filter(Boolean).sort();
-
-  // Filter Data
-  const filteredDonations = donations.filter(d => {
+  /* ---------------------------------------------------------------- */
+  /*  Filtered dataset                                                 */
+  /* ---------------------------------------------------------------- */
+  const filtered = donations.filter((d) => {
     const year = new Date(d.donationDate).getFullYear().toString();
     const matchesYear = selectedYear === "All" || year === selectedYear;
     const matchesDept = selectedDept === "All" || d.groupName === selectedDept;
     return matchesYear && matchesDept;
   });
 
-  // Calculate Aggregates
-  const totalAmount = filteredDonations.reduce((acc, curr) => acc + curr.amount, 0);
-  const avgDonation = filteredDonations.length > 0 ? totalAmount / filteredDonations.length : 0;
+  /* ---------------------------------------------------------------- */
+  /*  Aggregated statistics                                            */
+  /* ---------------------------------------------------------------- */
+  const totalAmount = filtered.reduce((acc, d) => acc + d.amount, 0);
+  const avgDonation = filtered.length > 0 ? totalAmount / filtered.length : 0;
 
-  // Monthly Breakdown
-  const monthlyData = filteredDonations.reduce((acc: any, curr) => {
-    const date = new Date(curr.donationDate);
-    const mKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const mName = date.toLocaleString('default', { month: 'short' });
-    if (!acc[mKey]) acc[mKey] = { name: mName, total: 0, count: 0 };
-    acc[mKey].total += curr.amount;
-    acc[mKey].count += 1;
-    return acc;
-  }, {});
+  // Monthly breakdown
+  const monthlyData = filtered.reduce<Record<string, { name: string; total: number; count: number }>>(
+    (acc, d) => {
+      const date = new Date(d.donationDate);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const name = date.toLocaleString("default", { month: "short" });
+      if (!acc[key]) acc[key] = { name, total: 0, count: 0 };
+      acc[key].total += d.amount;
+      acc[key].count += 1;
+      return acc;
+    },
+    {}
+  );
 
   const sortedMonths = Object.entries(monthlyData)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, data]: any) => ({ key, ...data }));
+    .map(([key, data]) => ({ key, ...data }));
 
-  const maxMonthTotal = Math.max(...sortedMonths.map(m => m.total), 1);
+  const maxMonthTotal = Math.max(...sortedMonths.map((m) => m.total), 1);
 
-  // Top Contributors
-  const contributorMap = filteredDonations.reduce((acc: any, curr) => {
-    if (!acc[curr.giverName]) acc[curr.giverName] = { name: curr.giverName, total: 0, count: 0 };
-    acc[curr.giverName].total += curr.amount;
-    acc[curr.giverName].count += 1;
-    return acc;
-  }, {});
+  // Top contributors
+  const contributorMap = filtered.reduce<Record<string, { name: string; total: number; count: number }>>(
+    (acc, d) => {
+      if (!acc[d.giverName]) acc[d.giverName] = { name: d.giverName, total: 0, count: 0 };
+      acc[d.giverName].total += d.amount;
+      acc[d.giverName].count += 1;
+      return acc;
+    },
+    {}
+  );
 
   const topContributors = Object.values(contributorMap)
-    .sort((a: any, b: any) => b.total - a.total)
+    .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
-  // Department Performance
-  const deptMap = filteredDonations.reduce((acc: any, curr) => {
-    if (!acc[curr.groupName]) acc[curr.groupName] = { name: curr.groupName, total: 0 };
-    acc[curr.groupName].total += curr.amount;
+  // Department performance
+  const deptMap = filtered.reduce<Record<string, { name: string; total: number }>>(
+    (acc, d) => {
+      if (!acc[d.groupName]) acc[d.groupName] = { name: d.groupName, total: 0 };
+      acc[d.groupName].total += d.amount;
+      return acc;
+    },
+    {}
+  );
+
+  const deptRanking = Object.values(deptMap).sort((a, b) => b.total - a.total);
+
+  // Day-of-week breakdown
+  const dayMap = filtered.reduce<Record<string, number>>((acc, d) => {
+    const day = new Date(d.donationDate).toLocaleDateString("en-US", { weekday: "long" });
+    acc[day] = (acc[day] || 0) + d.amount;
     return acc;
   }, {});
 
-  const deptRanking = Object.values(deptMap)
-    .sort((a: any, b: any) => b.total - a.total);
+  /* ---------------------------------------------------------------- */
+  /*  Render                                                           */
+  /* ---------------------------------------------------------------- */
+  if (loading) return <LoadingScreen message="Processing Intelligence..." />;
 
-  // Stats by Day of Week
-  const dayMap = filteredDonations.reduce((acc: any, curr) => {
-    const day = new Date(curr.donationDate).toLocaleDateString('en-US', { weekday: 'long' });
-    acc[day] = (acc[day] || 0) + curr.amount;
-    return acc;
-  }, {});
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Processing Intelligence...</div>;
+  const kpiCards = [
+    { label: "Aggregate Value", val: `₱ ${totalAmount.toLocaleString()}` },
+    { label: "Mean Contribution", val: `₱ ${avgDonation.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+    { label: "Ledger Entries", val: filtered.length },
+    { label: "Active Donors", val: Object.keys(contributorMap).length },
+  ];
 
   return (
     <div className="flex-1 space-y-6 font-sans w-full">
-      {/* Dynamic Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm">
-        <div>
-          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Advanced Analytics</h1>
-          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">Depth telemetry and performance audit</p>
-        </div>
-
+      {/* ---------- Header with filters ---------- */}
+      <PageHeader title="Advanced Analytics" subtitle="Depth telemetry and performance audit">
         <div className="flex flex-wrap gap-3">
-          <div className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100 flex items-center gap-2">
-            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Year :</span>
-            <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="bg-transparent text-[10px] font-black text-emerald-950 outline-none">
-              <option value="All">All Years</option>
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
-
-          <div className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100 flex items-center gap-2">
-            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Dept :</span>
-            <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="bg-transparent text-[10px] font-black text-emerald-950 outline-none max-w-[140px]">
-              <option value="All">All Departments</option>
-              {departments.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </div>
+          <FilterSelect
+            label="Year"
+            value={selectedYear}
+            onChange={setSelectedYear}
+            options={years}
+            allLabel="All Years"
+          />
+          <FilterSelect
+            label="Dept"
+            value={selectedDept}
+            onChange={setSelectedDept}
+            options={departments}
+            allLabel="All Departments"
+            className="max-w-[140px]"
+          />
         </div>
-      </header>
+      </PageHeader>
 
-      {/* Primary KPI Grid */}
+      {/* ---------- KPI Grid ---------- */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: "Aggregate Value", val: `₱ ${totalAmount.toLocaleString()}` },
-          { label: "Mean Contribution", val: `₱ ${avgDonation.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
-          { label: "Ledger Entries", val: filteredDonations.length },
-          { label: "Active Donors", val: Object.keys(contributorMap).length }
-        ].map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-emerald-200 transition-all">
-            <h3 className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none mb-1">{s.label}</h3>
-            <p className="text-xl font-black text-emerald-950 tabular-nums group-hover:text-emerald-600 transition-colors">{s.val}</p>
-          </div>
+        {kpiCards.map((s, i) => (
+          <KpiCard key={i} {...s} />
         ))}
       </div>
 
+      {/* ---------- Monthly Trend + Top Contributors ---------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Trend Detailed */}
+        {/* Monthly Trend */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 flex items-center gap-3">
-            <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
-            Monthly Scaled Projection
-          </h2>
-          <div className="space-y-6">
-            {sortedMonths.map((m: any) => (
-              <div key={m.key} className="group">
-                <div className="flex justify-between text-[10px] font-black text-emerald-900 uppercase tracking-tight mb-2">
-                  <span>{m.key} ({m.name})</span>
-                  <span className="tabular-nums">₱ {m.total.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-2 bg-zinc-50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
-                      style={{ width: `${(m.total / maxMonthTotal) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[9px] font-black text-zinc-300 w-8">{m.count}tx</span>
-                </div>
-              </div>
+          <SectionHeader title="Monthly Scaled Projection" />
+          <div className="space-y-6 mt-6">
+            {sortedMonths.map((m) => (
+              <ProgressBar
+                key={m.key}
+                label={`${m.key} (${m.name})`}
+                value={`₱ ${m.total.toLocaleString()}`}
+                percentage={(m.total / maxMonthTotal) * 100}
+                suffix={`${m.count}tx`}
+              />
             ))}
-            {sortedMonths.length === 0 && <p className="text-center py-10 text-[10px] font-black italic text-zinc-300 uppercase">No monthly data mapped</p>}
+            {sortedMonths.length === 0 && <EmptyState message="No monthly data mapped" />}
           </div>
         </div>
 
-        {/* Top Givers Audit */}
+        {/* Top Contributors */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6 flex items-center gap-3">
-            <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
-            Apex Contributors (Top 5)
-          </h2>
-          <div className="divide-y divide-gray-50">
-            {topContributors.map((c: any, i) => (
+          <SectionHeader title="Apex Contributors (Top 5)" />
+          <div className="divide-y divide-gray-50 mt-6">
+            {topContributors.map((c, i) => (
               <div key={c.name} className="py-5 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
-                  <span className="text-xs font-black text-emerald-900/20 tabular-nums">0{i + 1}</span>
+                  <span className="text-xs font-black text-emerald-900/20 tabular-nums">
+                    0{i + 1}
+                  </span>
                   <div>
-                    <p className="text-xs font-black text-emerald-950 uppercase tracking-tight group-hover:text-emerald-600 transition-colors">{c.name}</p>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{c.count} total contributions</p>
+                    <p className="text-xs font-black text-emerald-950 uppercase tracking-tight group-hover:text-emerald-600 transition-colors">
+                      {c.name}
+                    </p>
+                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">
+                      {c.count} total contributions
+                    </p>
                   </div>
                 </div>
-                <div className="text-sm font-black text-emerald-950 tabular-nums">₱ {c.total.toLocaleString()}</div>
+                <div className="text-sm font-black text-emerald-950 tabular-nums">
+                  ₱ {c.total.toLocaleString()}
+                </div>
               </div>
             ))}
-            {topContributors.length === 0 && <p className="text-center py-10 text-[10px] font-black italic text-zinc-300 uppercase">No contributor records found</p>}
+            {topContributors.length === 0 && <EmptyState message="No contributor records found" />}
           </div>
         </div>
       </div>
 
+      {/* ---------- Bottom row: Heatmap + Dept Ranking ---------- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Day of Week Analysis */}
+        {/* Weekly Heatmap */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6">Weekly Heatmap</h2>
+          <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest mb-6">
+            Weekly Heatmap
+          </h2>
           <div className="space-y-4">
-            {days.map(day => {
+            {WEEKDAYS.map((day) => {
               const amount = dayMap[day] || 0;
-              const perc = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
+              const pct = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
               return (
                 <div key={day} className="space-y-1">
                   <div className="flex justify-between text-[9px] font-black text-emerald-900/40 uppercase tracking-widest">
                     <span>{day}</span>
-                    <span>{amount > 0 ? `₱ ${amount.toLocaleString()}` : '--'}</span>
+                    <span>{amount > 0 ? `₱ ${amount.toLocaleString()}` : "--"}</span>
                   </div>
                   <div className="h-1 w-full bg-zinc-50 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-all" style={{ width: `${perc}%` }} />
+                    <div
+                      className="h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -235,7 +223,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Sector Ranking */}
+        {/* Department Power Ranking */}
         <div className="lg:col-span-2 bg-emerald-900 p-6 rounded-2xl shadow-xl shadow-emerald-900/20 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-6 opacity-10">
             <svg className="w-32 h-32 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -243,26 +231,77 @@ export default function AnalyticsPage() {
             </svg>
           </div>
           <h2 className="text-[10px] font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
-            <span className="h-4 w-1 bg-emerald-400 rounded-full"></span>
+            <span className="h-4 w-1 bg-emerald-400 rounded-full" />
             Department Power Ranking
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {deptRanking.map((dept: any, i) => (
-              <div key={dept.name} className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all">
+            {deptRanking.map((dept, i) => (
+              <div
+                key={dept.name}
+                className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all"
+              >
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">RANK 0{i + 1}</span>
-                  <div className="text-white font-black text-lg tabular-nums">₱ {dept.total.toLocaleString()}</div>
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                    RANK 0{i + 1}
+                  </span>
+                  <div className="text-white font-black text-lg tabular-nums">
+                    ₱ {dept.total.toLocaleString()}
+                  </div>
                 </div>
-                <div className="text-white font-black text-xs uppercase tracking-tight mb-2">{dept.name}</div>
+                <div className="text-white font-black text-xs uppercase tracking-tight mb-2">
+                  {dept.name}
+                </div>
                 <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-400" style={{ width: `${(dept.total / (deptRanking[0]?.total || 1)) * 100}%` }} />
+                  <div
+                    className="h-full bg-emerald-400"
+                    style={{ width: `${(dept.total / (deptRanking[0]?.total || 1)) * 100}%` }}
+                  />
                 </div>
               </div>
             ))}
-            {deptRanking.length === 0 && <p className="text-white/40 italic text-xs">No sector telemetry recorded.</p>}
+            {deptRanking.length === 0 && (
+              <p className="text-white/40 italic text-xs">No sector telemetry recorded.</p>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sub-component: styled filter dropdown                              */
+/* ------------------------------------------------------------------ */
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+  allLabel,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  allLabel: string;
+  className?: string;
+}) {
+  return (
+    <div className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100 flex items-center gap-2">
+      <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">
+        {label} :
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`bg-transparent text-[10px] font-black text-emerald-950 outline-none ${className}`}
+      >
+        <option value="All">{allLabel}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
     </div>
   );
 }
