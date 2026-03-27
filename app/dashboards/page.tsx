@@ -5,13 +5,23 @@ import { useRouter } from "next/navigation";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../src/lib/firebase/client";
+import { 
+  DONATION_CATEGORIES, 
+  MSK_DEPARTMENTS, 
+  RELIGIOUS_ORG_DEPARTMENTS,
+  ALL_MINISTRIES
+} from "../../src/lib/constants";
 
 interface Donation {
   id: string;
   giverName: string;
   amount: number;
-  groupName: string;
+  groupName?: string;
+  ministry?: string;
   donationDate: string;
+  category?: string;
+  department?: string;
+  noOfGivers?: number;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -26,6 +36,11 @@ export default function Dashboard() {
   const [activeYear, setActiveYear] = useState<string>(now.getFullYear().toString());
   const [activeMonth, setActiveMonth] = useState<number>(now.getMonth());
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  
+  // New Filters state
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [activeDept, setActiveDept] = useState<string>("All");
+  const [activeMinistry, setActiveMinistry] = useState<string>("All");
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -54,20 +69,27 @@ export default function Dashboard() {
     };
   }, [router]);
 
-  // DERIVED DATA
+  // DERIVED DATA WITH FILTERS
+  const passesFilters = (d: Donation) => {
+    const catMatch = activeCategory === "All" || d.category === activeCategory;
+    const deptMatch = activeDept === "All" || d.department === activeDept;
+    const ministryMatch = activeMinistry === "All" || d.ministry === activeMinistry || d.groupName === activeMinistry;
+    return catMatch && deptMatch && ministryMatch;
+  };
+
   const monthFiltered = donations.filter(d => {
     const date = new Date(d.donationDate);
-    return date.getFullYear().toString() === activeYear && date.getMonth() === activeMonth;
+    return date.getFullYear().toString() === activeYear && date.getMonth() === activeMonth && passesFilters(d);
   });
 
   const yearFiltered = donations.filter(d => {
-    return new Date(d.donationDate).getFullYear().toString() === activeYear;
+    return new Date(d.donationDate).getFullYear().toString() === activeYear && passesFilters(d);
   });
 
   const availableYears = Array.from(new Set(donations.map(d => new Date(d.donationDate).getFullYear().toString()))).filter(Boolean).sort((a, b) => b.localeCompare(a));
 
   const monthTotal = monthFiltered.reduce((acc, curr) => acc + curr.amount, 0);
-  const monthGivers = new Set(monthFiltered.map(d => d.giverName)).size;
+  const monthGivers = monthFiltered.reduce((acc, curr) => acc + (curr.noOfGivers || 1), 0);
   const monthAvg = monthFiltered.length > 0 ? monthTotal / monthFiltered.length : 0;
   const monthLargest = monthFiltered.length > 0 ? [...monthFiltered].sort((a, b) => b.amount - a.amount)[0] : null;
 
@@ -75,7 +97,7 @@ export default function Dashboard() {
     const txs = yearFiltered.filter(d => new Date(d.donationDate).getMonth() === index);
     const total = txs.reduce((acc, curr) => acc + curr.amount, 0);
     const count = txs.length;
-    const givers = new Set(txs.map(d => d.giverName)).size;
+    const givers = txs.reduce((acc, curr) => acc + (curr.noOfGivers || 1), 0);
     return { name, total, count, givers };
   });
 
@@ -105,33 +127,107 @@ export default function Dashboard() {
     <div className="flex-1 flex flex-col h-screen overflow-hidden gap-6 font-sans w-full bg-white">
 
       {/* 1. COMPACT HEADER */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
-        <div>
-          <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
-          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+      <header className="flex flex-col justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
+            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Year Selector */}
+            <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
+              <span className="text-[8px] font-black text-emerald-900/40 uppercase">Year:</span>
+              <select
+                value={activeYear}
+                onChange={(e) => setActiveYear(e.target.value)}
+                className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
+              >
+                {availableYears.length > 0 ? availableYears.map(y => <option key={y} value={y}>{y}</option>) : <option value={activeYear}>{activeYear}</option>}
+              </select>
+            </div>
+
+            {/* Month Selector */}
+            <div className="flex items-center gap-2 bg-emerald-600 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-700/10">
+              <span className="text-[8px] font-black text-white/50 uppercase">Month:</span>
+              <select
+                value={activeMonth}
+                onChange={(e) => setActiveMonth(parseInt(e.target.value))}
+                className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
+              >
+                {FULL_MONTHS.map((m, i) => <option key={m} value={i} className="text-emerald-950">{m}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-emerald-600 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-700/10">
-            <span className="text-[8px] font-black text-white/50 uppercase">Month:</span>
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-50">
+          {/* Category Filter */}
+          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
+            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Category:</span>
             <select
-              value={activeMonth}
-              onChange={(e) => setActiveMonth(parseInt(e.target.value))}
-              className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
+              value={activeCategory}
+              onChange={(e) => {
+                setActiveCategory(e.target.value);
+                setActiveDept("All");
+                setActiveMinistry("All");
+              }}
+              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
             >
-              {FULL_MONTHS.map((m, i) => <option key={m} value={i} className="text-emerald-950">{m}</option>)}
+              <option value="All">All Categories</option>
+              {DONATION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
 
+          {/* Department Filter */}
           <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
+            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Dept:</span>
             <select
-              value={activeYear}
-              onChange={(e) => setActiveYear(e.target.value)}
-              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
+              value={activeDept}
+              onChange={(e) => {
+                setActiveDept(e.target.value);
+                setActiveMinistry("All");
+              }}
+              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={activeCategory === "Parishioner"}
             >
-              {availableYears.length > 0 ? availableYears.map(y => <option key={y} value={y}>{y}</option>) : <option value={activeYear}>{activeYear}</option>}
+              <option value="All">All Departments</option>
+              {activeCategory === "MSK" && MSK_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+              {activeCategory === "Religious Organization" && RELIGIOUS_ORG_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+              {activeCategory === "Parishioner" && <option value="GENERAL">GENERAL</option>}
             </select>
           </div>
+
+          {/* Ministry Filter */}
+          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
+            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Ministry:</span>
+            <select
+              value={activeMinistry}
+              onChange={(e) => setActiveMinistry(e.target.value)}
+              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer max-w-[150px] disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={activeCategory === "Parishioner"}
+            >
+              <option value="All">All Ministries</option>
+              {ALL_MINISTRIES
+                .filter(m => (activeCategory === "All" || m.category === activeCategory) && (activeDept === "All" || m.department === activeDept))
+                .map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
+            </select>
+          </div>
+
+          {/* Clear Filters */}
+          {(activeCategory !== "All" || activeDept !== "All" || activeMinistry !== "All") && (
+            <button 
+              onClick={() => {
+                setActiveCategory("All");
+                setActiveDept("All");
+                setActiveMinistry("All");
+              }}
+              className="text-[8px] font-black text-red-500 uppercase hover:text-red-700 transition-colors ml-auto"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
       </header>
 
