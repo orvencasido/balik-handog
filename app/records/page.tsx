@@ -219,7 +219,7 @@ export default function DonationsList() {
                         </svg>
                       </button>
                       {isAdmin && (
-                        <button 
+                        <button
                           onClick={() => setEditingDonation(donation)}
                           className="p-2 bg-zinc-50 text-zinc-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all"
                           title="Edit Record"

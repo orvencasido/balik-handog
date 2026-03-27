@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../src/lib/firebase/client";
-import { 
-  DONATION_CATEGORIES, 
-  MSK_DEPARTMENTS, 
+import {
+  DONATION_CATEGORIES,
+  MSK_DEPARTMENTS,
   RELIGIOUS_ORG_DEPARTMENTS,
   ALL_MINISTRIES
 } from "../../src/lib/constants";
@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [activeYear, setActiveYear] = useState<string>(now.getFullYear().toString());
   const [activeMonth, setActiveMonth] = useState<number>(now.getMonth());
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
-  
+
   // New Filters state
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [activeDept, setActiveDept] = useState<string>("All");
@@ -217,7 +217,7 @@ export default function Dashboard() {
 
           {/* Clear Filters */}
           {(activeCategory !== "All" || activeDept !== "All" || activeMinistry !== "All") && (
-            <button 
+            <button
               onClick={() => {
                 setActiveCategory("All");
                 setActiveDept("All");
@@ -317,8 +317,8 @@ export default function Dashboard() {
                     >
                       <div
                         className={`rounded-full border-[#059669] transition-all duration-300 absolute box-border ${isActive || isHovered
-                            ? "bg-[#059669] border-[2.5px] w-[10px] h-[10px]"
-                            : "bg-white border-[1.5px] w-[6px] h-[6px]"
+                          ? "bg-[#059669] border-[2.5px] w-[10px] h-[10px]"
+                          : "bg-white border-[1.5px] w-[6px] h-[6px]"
                           }`}
                       />
 
