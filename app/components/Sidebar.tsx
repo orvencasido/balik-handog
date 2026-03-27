@@ -51,29 +51,29 @@ export default function Sidebar() {
         {navItems
           .filter(item => !item.adminOnly || isAdmin)
           .map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <div key={item.name}>
-              <Link
-                href={item.href}
-                className={`flex items-center group px-5 py-3.5 text-xs font-bold tracking-tight rounded-xl transition-all ${isActive
-                  ? "bg-emerald-50 text-emerald-800"
-                  : "text-zinc-400 hover:text-emerald-700 hover:bg-emerald-50/50"
-                  }`}
-              >
-                <svg
-                  className={`mr-3 h-5 w-5 ${isActive ? "text-emerald-600" : "text-zinc-400 group-hover:text-emerald-600"} transition-all`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+            const isActive = pathname === item.href;
+            return (
+              <div key={item.name}>
+                <Link
+                  href={item.href}
+                  className={`flex items-center group px-5 py-3.5 text-xs font-bold tracking-tight rounded-xl transition-all ${isActive
+                    ? "bg-emerald-50 text-emerald-800"
+                    : "text-zinc-400 hover:text-emerald-700 hover:bg-emerald-50/50"
+                    }`}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={item.iconPath} />
-                </svg>
-                {item.name}
-              </Link>
-            </div>
-          );
-        })}
+                  <svg
+                    className={`mr-3 h-5 w-5 ${isActive ? "text-emerald-600" : "text-zinc-400 group-hover:text-emerald-600"} transition-all`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={item.iconPath} />
+                  </svg>
+                  {item.name}
+                </Link>
+              </div>
+            );
+          })}
       </nav>
 
       <div className="p-4 mt-auto space-y-2 border-t border-gray-50">
@@ -87,7 +87,7 @@ export default function Sidebar() {
           Sign Out
         </button>
         <div className="bg-zinc-50 p-4 rounded-xl flex items-center justify-center">
-          <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest text-center">v1.1 | Role-Based Access | Mar 2026</span>
+          <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest text-center">v1.0 | © Orven Casido</span>
         </div>
       </div>
     </aside>
