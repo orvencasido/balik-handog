@@ -59,6 +59,9 @@ export default function DonationsList() {
     return (
       donation.giverName?.toLowerCase().includes(q) ||
       donation.groupName?.toLowerCase().includes(q) ||
+      donation.category?.toLowerCase().includes(q) ||
+      donation.department?.toLowerCase().includes(q) ||
+      donation.recordedBy?.toLowerCase().includes(q) ||
       donation.notes?.toLowerCase().includes(q)
     );
   });
@@ -112,27 +115,42 @@ export default function DonationsList() {
         <table className="w-full text-left">
           <thead>
             <tr className="bg-zinc-50 border-b border-gray-100">
-              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
-              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry</th>
               <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
               <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Date</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
+              <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Recorded By</th>
               <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {displayDonations.map((donation) => (
               <tr key={donation.id} className="hover:bg-emerald-50/30 transition-colors group">
+                <td className="px-8 py-5 font-black text-sm text-emerald-600 tabular-nums">₱ {donation.amount.toLocaleString()}</td>
                 <td className="px-8 py-5">
                    <div className="flex flex-col">
-                      <span className="font-black text-xs text-emerald-950 group-hover:text-emerald-700 transition-colors">{donation.giverName}</span>
+                      <span className="font-black text-xs text-emerald-950 group-hover:text-emerald-700 transition-colors uppercase">{donation.giverName}</span>
                       <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter mt-0.5">Contributor</span>
                    </div>
                 </td>
                 <td className="px-8 py-5">
-                  <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.groupName || 'General'}</span>
+                  <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-tight">{donation.category || 'N/A'}</span>
                 </td>
-                <td className="px-8 py-5 font-black text-xs text-emerald-950 tabular-nums">₱ {donation.amount.toLocaleString()}</td>
                 <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{donation.donationDate}</td>
+                <td className="px-8 py-5">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.groupName || 'General'}</span>
+                    {donation.department && <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{donation.department}</span>}
+                  </div>
+                </td>
+                <td className="px-8 py-5 text-center">
+                  <span className="text-[10px] font-black text-emerald-950 tabular-nums">{donation.noOfGivers || 1}</span>
+                </td>
+                <td className="px-8 py-5">
+                  <span className="text-[10px] font-black text-emerald-900 opacity-60 uppercase tracking-tight">{donation.recordedBy || '--'}</span>
+                </td>
                 <td className="px-8 py-5 italic text-[10px] font-bold text-zinc-300 max-w-xs truncate group-hover:text-emerald-600 transition-all text-right">{donation.notes || '--'}</td>
               </tr>
             ))}
