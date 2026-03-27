@@ -152,9 +152,9 @@ export default function AddDonation() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold italic">Checking access...</div>;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-white p-10 rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
-        <div className="mb-10 border-b border-gray-50 pb-6 text-center">
+    <div className="flex-1 flex flex-col items-center justify-start py-8 px-2 min-h-screen">
+      <div className="w-full max-w-2xl bg-white p-6 rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
+        <div className="mb-6 border-b border-gray-50 pb-4 text-center">
           <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Record Entry</h1>
           <p className="text-[8px] text-emerald-700/60 font-bold uppercase tracking-widest mt-1">Balik Handog Ledger System</p>
         </div>
@@ -167,10 +167,10 @@ export default function AddDonation() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-6">
-            {/* 1. Global Ministry Search (Primary Action) */}
-            <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
+            {/* 1. Global Ministry Search */}
+            <div className="space-y-1.5">
               <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1 text-emerald-600">Quick Search: Organization / Ministry</label>
               <input
                 type="text"
@@ -178,7 +178,7 @@ export default function AddDonation() {
                 list="ministry-list"
                 value={formData.ministry}
                 onChange={handleInputChange}
-                className="w-full px-5 py-4 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300"
+                className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300"
                 placeholder="Start typing ministry name (e.g. Sorrow or Altar)..."
                 required
               />
@@ -189,41 +189,41 @@ export default function AddDonation() {
               </datalist>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Name</label>
                 <input
                   type="text"
                   name="giverName"
                   value={formData.giverName}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
                   required
                   placeholder="e.g. Maria Clara"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
                 <input
                   type="number"
                   name="amount"
                   value={formData.amount}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
                   required
                   placeholder="0.00"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category (Auto-selected)</label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
                   required
                 >
                   <option value="" disabled>Select Category</option>
@@ -232,13 +232,13 @@ export default function AddDonation() {
                   ))}
                 </select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Department (Auto-selected)</label>
                 <select
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
                   required
                   disabled={!formData.category}
                 >
@@ -256,55 +256,54 @@ export default function AddDonation() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Receipt Date</label>
                 <input
                   type="date"
                   name="donationDate"
                   value={formData.donationDate}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">No. Of Givers</label>
+              <div className="space-y-1.5">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Givers</label>
                 <input
                   type="number"
                   name="noOfGivers"
                   value={formData.noOfGivers}
                   onChange={handleInputChange}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
                   required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Recorded By</label>
+                <input
+                  type="text"
+                  name="recordedBy"
+                  value={formData.recordedBy}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+                  placeholder="e.g. Clerk Name"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Recorded By</label>
-              <input
-                type="text"
-                name="recordedBy"
-                value={formData.recordedBy}
-                onChange={handleInputChange}
-                className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
-                placeholder="e.g. Clerk Name"
-              />
-            </div>
-
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Transaction Notes</label>
               <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleInputChange}
-                className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl h-24 text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
-                placeholder="Notes about this contribution..."
+                className="w-full px-4 py-2 bg-zinc-50 border border-gray-100 rounded-xl h-12 text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300 resize-none"
+                placeholder="Optional notes..."
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-8">
+          <div className="grid grid-cols-2 gap-4 mt-2">
             <button
               type="button"
               onClick={clearForm}

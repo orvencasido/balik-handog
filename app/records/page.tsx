@@ -28,6 +28,7 @@ export default function DonationsList() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedNote, setSelectedNote] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -153,7 +154,12 @@ export default function DonationsList() {
                 <td className="px-8 py-5">
                   <span className="text-[10px] font-black text-emerald-900 opacity-60 uppercase tracking-tight">{donation.recordedBy || '--'}</span>
                 </td>
-                <td className="px-8 py-5 italic text-[10px] font-bold text-zinc-300 max-w-xs truncate group-hover:text-emerald-600 transition-all text-right">{donation.notes || '--'}</td>
+                <td 
+                  className="px-8 py-5 italic text-[10px] font-bold text-zinc-300 max-w-[100px] truncate group-hover:text-emerald-600 transition-all text-right cursor-pointer"
+                  onClick={() => donation.notes && setSelectedNote(donation.notes)}
+                >
+                  {donation.notes || '--'}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -178,6 +184,33 @@ export default function DonationsList() {
           </div>
         )}
       </div>
+
+      {/* Note Modal */}
+      {selectedNote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/20 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden transform animate-in fade-in zoom-in duration-200">
+            <div className="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
+              <h3 className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Transaction Notes</h3>
+              <button onClick={() => setSelectedNote(null)} className="text-emerald-600 hover:text-emerald-800 transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-8">
+              <p className="text-xs font-bold text-emerald-950 leading-relaxed whitespace-pre-wrap">{selectedNote}</p>
+            </div>
+            <div className="p-6 bg-zinc-50 flex justify-end">
+              <button 
+                onClick={() => setSelectedNote(null)}
+                className="px-6 py-2 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

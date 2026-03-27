@@ -12,6 +12,7 @@ interface Donation {
   amount: number;
   groupName: string;
   donationDate: string;
+  noOfGivers?: number;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -67,7 +68,7 @@ export default function Dashboard() {
   const availableYears = Array.from(new Set(donations.map(d => new Date(d.donationDate).getFullYear().toString()))).filter(Boolean).sort((a, b) => b.localeCompare(a));
 
   const monthTotal = monthFiltered.reduce((acc, curr) => acc + curr.amount, 0);
-  const monthGivers = new Set(monthFiltered.map(d => d.giverName)).size;
+  const monthGivers = monthFiltered.reduce((acc, curr) => acc + (curr.noOfGivers || 1), 0);
   const monthAvg = monthFiltered.length > 0 ? monthTotal / monthFiltered.length : 0;
   const monthLargest = monthFiltered.length > 0 ? [...monthFiltered].sort((a, b) => b.amount - a.amount)[0] : null;
 
@@ -75,7 +76,7 @@ export default function Dashboard() {
     const txs = yearFiltered.filter(d => new Date(d.donationDate).getMonth() === index);
     const total = txs.reduce((acc, curr) => acc + curr.amount, 0);
     const count = txs.length;
-    const givers = new Set(txs.map(d => d.giverName)).size;
+    const givers = txs.reduce((acc, curr) => acc + (curr.noOfGivers || 1), 0);
     return { name, total, count, givers };
   });
 
