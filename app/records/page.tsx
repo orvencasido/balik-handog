@@ -14,6 +14,10 @@ interface Donation {
   donationDate: string;
   notes: string;
   monthKey: string;
+  category?: string;
+  department?: string;
+  noOfGivers?: number;
+  recordedBy?: string;
   createdAt: any;
 }
 

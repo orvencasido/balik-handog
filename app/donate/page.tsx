@@ -19,7 +19,11 @@ export default function AddDonation() {
     groupName: "Youth Ministry",
     amount: "",
     donationDate: new Date().toISOString().split('T')[0],
-    notes: ""
+    notes: "",
+    category: "",
+    department: "",
+    noOfGivers: "1",
+    recordedBy: ""
   });
 
   useEffect(() => {
@@ -55,6 +59,10 @@ export default function AddDonation() {
         groupId: formData.groupId,
         groupName: formData.groupName,
         amount: Number(formData.amount),
+        category: formData.category,
+        department: formData.department,
+        noOfGivers: Number(formData.noOfGivers),
+        recordedBy: formData.recordedBy,
         donationDate: formData.donationDate,
         monthKey: monthKey,
         year: year,
@@ -71,7 +79,11 @@ export default function AddDonation() {
         groupName: "Youth Ministry",
         amount: "",
         donationDate: new Date().toISOString().split('T')[0],
-        notes: ""
+        notes: "",
+        category: "",
+        department: "",
+        noOfGivers: "1",
+        recordedBy: ""
       });
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message || "Save failed." });
@@ -129,6 +141,31 @@ export default function AddDonation() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category</label>
+                <input
+                  type="text"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+                  placeholder="e.g. Tithes"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Department</label>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+                  placeholder="e.g. Finance"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Organization / Ministry</label>
                 <select
                   name="groupName"
@@ -151,6 +188,31 @@ export default function AddDonation() {
                   value={formData.donationDate}
                   onChange={handleInputChange}
                   className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">No. Of Givers</label>
+                <input
+                  type="number"
+                  name="noOfGivers"
+                  value={formData.noOfGivers}
+                  onChange={handleInputChange}
+                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-black text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all tabular-nums"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Recorded By</label>
+                <input
+                  type="text"
+                  name="recordedBy"
+                  value={formData.recordedBy}
+                  onChange={handleInputChange}
+                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
+                  placeholder="e.g. Clerk Name"
                 />
               </div>
             </div>
