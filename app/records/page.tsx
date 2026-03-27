@@ -22,6 +22,12 @@ interface Donation {
   createdAt: any;
 }
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return '--';
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+};
+
 export default function DonationsList() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -139,9 +145,9 @@ export default function DonationsList() {
                    </div>
                 </td>
                 <td className="px-8 py-5">
-                  <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-tight">{donation.category || 'N/A'}</span>
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{donation.category || 'N/A'}</span>
                 </td>
-                <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{donation.donationDate}</td>
+                <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{formatDate(donation.donationDate)}</td>
                 <td className="px-8 py-5">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.ministry || donation.groupName || 'General'}</span>

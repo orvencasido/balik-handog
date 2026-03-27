@@ -178,9 +178,10 @@ export default function AddDonation() {
                 list="ministry-list"
                 value={formData.ministry}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300"
-                placeholder="Start typing ministry name (e.g. Sorrow or Altar)..."
-                required
+                className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                placeholder={formData.category === "Parishioner" ? "Search disabled for Parishioners" : "Start typing ministry name (e.g. Sorrow or Altar)..."}
+                required={formData.category !== "Parishioner"}
+                disabled={formData.category === "Parishioner"}
               />
               <datalist id="ministry-list">
                 {ALL_MINISTRIES.map((m) => (
@@ -238,11 +239,16 @@ export default function AddDonation() {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                  required
-                  disabled={!formData.category}
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  required={formData.category !== "Parishioner"}
+                  disabled={!formData.category || formData.category === "Parishioner"}
                 >
-                  <option value="">{!formData.category ? "Select Category First" : "Select Department"}</option>
+                  <option value="">
+                    {!formData.category 
+                      ? "Select Category First" 
+                      : (formData.category === "Parishioner" ? "GENERAL" : "Select Department")
+                    }
+                  </option>
                   {formData.category === "MSK" && MSK_DEPARTMENTS.map((dept) => (
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
