@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "../../src/lib/firebase/client";
 import {
@@ -34,12 +34,26 @@ export default function AddDonation() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) router.push("/");
-      else setUser(currentUser);
-      setLoading(false);
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        router.push("/");
+      } else {
+        setUser(currentUser);
+        // Check Role
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          if (userDoc.data().role !== "admin") {
+            router.push("/records"); // Redirect non-admins
+          } else {
+            setLoading(false);
+          }
+        } else {
+          router.push("/records");
+        }
+      }
     });
-    return () => unsubscribe();
+
+    return () => unsubscribeAuth();
   }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -244,8 +258,8 @@ export default function AddDonation() {
                   disabled={!formData.category || formData.category === "Parishioner"}
                 >
                   <option value="">
-                    {!formData.category 
-                      ? "Select Category First" 
+                    {!formData.category
+                      ? "Select Category First"
                       : (formData.category === "Parishioner" ? "GENERAL" : "Select Department")
                     }
                   </option>
