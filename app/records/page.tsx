@@ -10,7 +10,8 @@ interface Donation {
   id: string;
   giverName: string;
   amount: number;
-  groupName: string;
+  ministry?: string;
+  groupName?: string;
   donationDate: string;
   notes: string;
   monthKey: string;
@@ -58,6 +59,7 @@ export default function DonationsList() {
     const q = searchQuery.toLowerCase();
     return (
       donation.giverName?.toLowerCase().includes(q) ||
+      donation.ministry?.toLowerCase().includes(q) ||
       donation.groupName?.toLowerCase().includes(q) ||
       donation.category?.toLowerCase().includes(q) ||
       donation.department?.toLowerCase().includes(q) ||
@@ -141,7 +143,7 @@ export default function DonationsList() {
                 <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{donation.donationDate}</td>
                 <td className="px-8 py-5">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.groupName || 'General'}</span>
+                    <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.ministry || donation.groupName || 'General'}</span>
                     {donation.department && <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{donation.department}</span>}
                   </div>
                 </td>
