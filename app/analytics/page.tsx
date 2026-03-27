@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
   const avgDonation = filteredDonations.length > 0 ? totalAmount / filteredDonations.length : 0;
 
   // Monthly Breakdown
-  const monthlyData = filteredDonations.reduce((acc: any, curr) => {
+  const monthlyData = filteredDonations.reduce((acc: Record<string, { name: string, total: number, count: number }>, curr) => {
     const date = new Date(curr.donationDate);
     const mKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const mName = date.toLocaleString('default', { month: 'short' });
@@ -80,12 +80,12 @@ export default function AnalyticsPage() {
 
   const sortedMonths = Object.entries(monthlyData)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, data]: any) => ({ key, ...data }));
+    .map(([key, data]) => ({ key, ...data }));
 
   const maxMonthTotal = Math.max(...sortedMonths.map(m => m.total), 1);
 
   // Top Contributors
-  const contributorMap = filteredDonations.reduce((acc: any, curr) => {
+  const contributorMap = filteredDonations.reduce((acc: Record<string, { name: string, total: number, count: number }>, curr) => {
     if (!acc[curr.giverName]) acc[curr.giverName] = { name: curr.giverName, total: 0, count: 0 };
     acc[curr.giverName].total += curr.amount;
     acc[curr.giverName].count += 1;
@@ -93,21 +93,22 @@ export default function AnalyticsPage() {
   }, {});
 
   const topContributors = Object.values(contributorMap)
-    .sort((a: any, b: any) => b.total - a.total)
+    .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
   // Department Performance
-  const deptMap = filteredDonations.reduce((acc: any, curr) => {
-    if (!acc[curr.groupName]) acc[curr.groupName] = { name: curr.groupName, total: 0 };
-    acc[curr.groupName].total += curr.amount;
+  const deptMap = filteredDonations.reduce((acc: Record<string, { name: string, total: number }>, curr) => {
+    const deptName = curr.groupName || "General";
+    if (!acc[deptName]) acc[deptName] = { name: deptName, total: 0 };
+    acc[deptName].total += curr.amount;
     return acc;
   }, {});
 
   const deptRanking = Object.values(deptMap)
-    .sort((a: any, b: any) => b.total - a.total);
+    .sort((a, b) => b.total - a.total);
 
   // Stats by Day of Week
-  const dayMap = filteredDonations.reduce((acc: any, curr) => {
+  const dayMap = filteredDonations.reduce((acc: Record<string, number>, curr) => {
     const day = new Date(curr.donationDate).toLocaleDateString('en-US', { weekday: 'long' });
     acc[day] = (acc[day] || 0) + curr.amount;
     return acc;
@@ -167,7 +168,7 @@ export default function AnalyticsPage() {
             Monthly Scaled Projection
           </h2>
           <div className="space-y-6">
-            {sortedMonths.map((m: any) => (
+            {sortedMonths.map((m) => (
               <div key={m.key} className="group">
                 <div className="flex justify-between text-[10px] font-black text-emerald-900 uppercase tracking-tight mb-2">
                   <span>{m.key} ({m.name})</span>
@@ -195,7 +196,7 @@ export default function AnalyticsPage() {
             Apex Contributors (Top 5)
           </h2>
           <div className="divide-y divide-gray-50">
-            {topContributors.map((c: any, i) => (
+            {topContributors.map((c, i) => (
               <div key={c.name} className="py-5 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <span className="text-xs font-black text-emerald-900/20 tabular-nums">0{i + 1}</span>
@@ -247,7 +248,7 @@ export default function AnalyticsPage() {
             Department Power Ranking
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {deptRanking.map((dept: any, i) => (
+            {deptRanking.map((dept, i) => (
               <div key={dept.name} className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">RANK 0{i + 1}</span>
