@@ -31,7 +31,10 @@ interface Donation {
 const formatDate = (dateString: string) => {
   if (!dateString) return '--';
   const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
 };
 
 export default function DonationsList() {
@@ -172,42 +175,43 @@ export default function DonationsList() {
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[1000px]">
+          <table className="w-full text-left min-w-[900px]">
             <thead>
               <tr className="bg-zinc-50 border-b border-gray-100">
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Date</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
-                <th className="px-8 py-5 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Date</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Recorder</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
+                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {displayDonations.map((donation) => (
                 <tr key={donation.id} className="hover:bg-emerald-50/30 transition-colors group">
-                  <td className="px-8 py-5 font-black text-sm text-emerald-600 tabular-nums">₱ {donation.amount.toLocaleString()}</td>
-                  <td className="px-8 py-5">
-                    <div className="flex flex-col">
-                      <span className="font-black text-xs text-emerald-950 group-hover:text-emerald-700 transition-colors uppercase">{donation.giverName}</span>
-                      <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter mt-0.5">{donation.recordedBy || 'Contributor'}</span>
-                    </div>
+                  <td className="px-5 py-3 font-black text-sm text-emerald-600 tabular-nums whitespace-nowrap">₱{donation.amount.toLocaleString()}</td>
+                  <td className="px-5 py-3">
+                    <span className="font-bold text-xs text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase whitespace-nowrap">{donation.giverName}</span>
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-3">
                     <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{donation.category || 'N/A'}</span>
                   </td>
-                  <td className="px-8 py-5 text-[10px] font-bold text-zinc-400">{formatDate(donation.donationDate)}</td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-3 text-[10px] font-bold text-zinc-400">{formatDate(donation.donationDate)}</td>
+                  <td className="px-5 py-3">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.ministry || donation.groupName || 'General'}</span>
                       {donation.department && <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{donation.department}</span>}
                     </div>
                   </td>
-                  <td className="px-8 py-5 text-center">
+                  <td className="px-5 py-3">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight italic whitespace-nowrap">{donation.recordedBy || 'System'}</span>
+                  </td>
+                  <td className="px-5 py-3 text-center">
                     <span className="text-[10px] font-black text-emerald-950 tabular-nums">{donation.noOfGivers || 1}</span>
                   </td>
-                  <td className="px-8 py-5 text-right">
+                  <td className="px-5 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => donation.notes && setSelectedNote(donation.notes)}

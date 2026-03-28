@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   const now = new Date();
   const [activeYear, setActiveYear] = useState<string>(now.getFullYear().toString());
-  const [activeMonth, setActiveMonth] = useState<number>(now.getMonth());
+  const [activeMonth, setActiveMonth] = useState<number>(-1); // Default to All Months
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
   // New Filters state
@@ -55,10 +55,19 @@ export default function Dashboard() {
     );
 
     const unsubscribeDonations = onSnapshot(donationsQuery, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Donation[];
+      const data = snapshot.docs.map(doc => {
+        const d = doc.data();
+        return {
+          id: doc.id,
+          ...d,
+          amount: typeof d.amount === 'number' ? d.amount : (Number(String(d.amount || 0).replace(/[^\d.-]/g, "")) || 0),
+          noOfGivers: typeof d.noOfGivers === 'number' ? d.noOfGivers : (Number(String(d.noOfGivers || 1).replace(/[^\d.-]/g, "")) || 1),
+          category: d.category ? String(d.category).trim() : "Uncategorized",
+          department: d.department ? String(d.department).trim() : "N/A",
+          ministry: d.ministry ? String(d.ministry).trim() : (d.groupName ? String(d.groupName).trim() : "N/A"),
+          groupName: d.groupName ? String(d.groupName).trim() : "N/A",
+        };
+      }) as Donation[];
       setDonations(data);
       setLoading(false);
     });
@@ -71,22 +80,57 @@ export default function Dashboard() {
 
   // DERIVED DATA WITH FILTERS
   const passesFilters = (d: Donation) => {
-    const catMatch = activeCategory === "All" || d.category === activeCategory;
-    const deptMatch = activeDept === "All" || d.department === activeDept;
-    const ministryMatch = activeMinistry === "All" || d.ministry === activeMinistry || d.groupName === activeMinistry;
+    const normalize = (s: string) => (s || "").toLowerCase().trim();
+
+    // Fuzzy matching helper: checks if two strings match exactly or if they share a significant component (split by - or |)
+    const matchesFuzzy = (recordVal: string, filterVal: string) => {
+      const r = normalize(recordVal);
+      const f = normalize(filterVal);
+      if (f === "all" || f === "") return true;
+      if (r === f) return true;
+
+      // Split by common delimiters used in the app ( - and | )
+      const rParts = r.split(/[\-\|]/).map(p => p.trim()).filter(p => p.length > 0);
+      const fParts = f.split(/[\-\|]/).map(p => p.trim()).filter(p => p.length > 0);
+
+      // Match if the record value contains the filter value or vice versa, 
+      // or if they share any component parts (e.g., "KAWAN I" matches "KAWAN I - SAN PEDRO")
+      return r.includes(f) || f.includes(r) || rParts.some(rp => fParts.includes(rp)) || fParts.some(fp => rParts.some(rp => rp.includes(fp) || fp.includes(rp)));
+    };
+
+    const catMatch = activeCategory === "All" || normalize(d.category || "") === normalize(activeCategory);
+    const deptMatch = activeDept === "All" || matchesFuzzy(d.department || "", activeDept);
+    const ministryMatch = activeMinistry === "All" ||
+      matchesFuzzy(d.ministry || "", activeMinistry) ||
+      matchesFuzzy(d.groupName || "", activeMinistry);
+
     return catMatch && deptMatch && ministryMatch;
   };
 
   const monthFiltered = donations.filter(d => {
+    if (!d.donationDate) return false;
     const date = new Date(d.donationDate);
-    return date.getFullYear().toString() === activeYear && date.getMonth() === activeMonth && passesFilters(d);
+    if (isNaN(date.getTime())) return false; // Skip invalid dates
+
+    const yearMatch = date.getFullYear().toString() === activeYear;
+    const monthMatch = activeMonth === -1 || date.getMonth() === activeMonth;
+
+    return yearMatch && monthMatch && passesFilters(d);
   });
 
   const yearFiltered = donations.filter(d => {
-    return new Date(d.donationDate).getFullYear().toString() === activeYear && passesFilters(d);
+    if (!d.donationDate) return false;
+    const date = new Date(d.donationDate);
+    if (isNaN(date.getTime())) return false;
+
+    return date.getFullYear().toString() === activeYear && passesFilters(d);
   });
 
-  const availableYears = Array.from(new Set(donations.map(d => new Date(d.donationDate).getFullYear().toString()))).filter(Boolean).sort((a, b) => b.localeCompare(a));
+  const availableYears = Array.from(new Set(donations.map(d => {
+    if (!d.donationDate) return "";
+    const date = new Date(d.donationDate);
+    return isNaN(date.getTime()) ? "" : date.getFullYear().toString();
+  }))).filter(y => y !== "").sort((a, b) => b.localeCompare(a));
 
   const monthTotal = monthFiltered.reduce((acc, curr) => acc + curr.amount, 0);
   const monthGivers = monthFiltered.reduce((acc, curr) => acc + (curr.noOfGivers || 1), 0);
@@ -131,7 +175,7 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
-            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{activeMonth === -1 ? "All Months" : FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -155,6 +199,7 @@ export default function Dashboard() {
                 onChange={(e) => setActiveMonth(parseInt(e.target.value))}
                 className="bg-transparent text-[10px] font-black text-white outline-none cursor-pointer"
               >
+                <option value={-1} className="text-emerald-950">All Months</option>
                 {FULL_MONTHS.map((m, i) => <option key={m} value={i} className="text-emerald-950">{m}</option>)}
               </select>
             </div>
@@ -210,7 +255,12 @@ export default function Dashboard() {
             >
               <option value="All">All Ministries</option>
               {ALL_MINISTRIES
-                .filter(m => (activeCategory === "All" || m.category === activeCategory) && (activeDept === "All" || m.department === activeDept))
+                .filter(m => {
+                  const normalize = (s: string) => (s || "").toLowerCase().trim();
+                  const catMatch = activeCategory === "All" || normalize(m.category) === normalize(activeCategory);
+                  const deptMatch = activeDept === "All" || normalize(m.department) === normalize(activeDept);
+                  return catMatch && deptMatch;
+                })
                 .map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
             </select>
           </div>
@@ -237,18 +287,26 @@ export default function Dashboard() {
         {/* KPI CARDS - Spanning Top row */}
         <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
           {[
-            { label: "Current Month Summary", val: `₱ ${monthTotal.toLocaleString()}` },
+            { label: activeMonth === -1 ? "Annual Summary" : "Current Month Summary", val: `₱${monthTotal.toLocaleString()}` },
             { label: "Contributors", val: monthGivers },
-            { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
-            { label: "Highest Single Gift", val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`, subtitle: monthLargest?.giverName }
+            { label: "Avg Contribution", val: `₱${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+            {
+              label: "Highest Single Gift",
+              val: `₱${monthLargest?.amount.toLocaleString() || 0}`,
+              subtitle: monthLargest ? [monthLargest.giverName, (!monthLargest.ministry || monthLargest.ministry === "N/A") ? "Parishioner" : monthLargest.ministry] : []
+            }
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
-              <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest mb-1">{stat.label}</span>
-              <div className="flex flex-col gap-1 overflow-hidden">
-                <span className="text-xl font-black text-emerald-950 tabular-nums leading-none">{stat.val}</span>
-                <span className={`text-[8px] font-black text-emerald-600/60 uppercase tracking-widest truncate h-3 flex items-center ${stat.subtitle ? 'opacity-100' : 'opacity-0'}`}>
-                  BY {stat.subtitle || 'N/A'}
-                </span>
+            <div key={i} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5 flex flex-col justify-center gap-2 hover:border-emerald-100 transition-all group">
+              <span className="text-[8px] font-bold text-emerald-900/40 uppercase tracking-[0.15em] leading-none">{stat.label}</span>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
+                <div className="flex flex-col min-h-[22px] justify-center">
+                  {(Array.isArray(stat.subtitle) ? stat.subtitle : [stat.subtitle]).filter(Boolean).map((line, idx) => (
+                    <span key={idx} className={`${idx === 1 ? 'text-[7px] font-semibold text-emerald-800/40' : 'text-[8px] font-bold text-emerald-700/70'} uppercase tracking-widest truncate leading-tight`}>
+                      {line}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
@@ -261,7 +319,7 @@ export default function Dashboard() {
               <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
               Donation Trend Analysis ({activeYear})
             </h2>
-            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums">Peak: ₱{yearMax.toLocaleString()}</div>
+            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
           </div>
 
           <div className="flex-1 relative min-h-0">
