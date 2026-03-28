@@ -170,10 +170,10 @@ export interface FlatMinistry {
 }
 
 export const ALL_MINISTRIES: FlatMinistry[] = [
-  ...Object.entries(MSK_GROUPS).flatMap(([dept, groups]) => 
+  ...Object.entries(MSK_GROUPS).flatMap(([dept, groups]) =>
     groups.map(name => ({ name, category: "MSK", department: dept }))
   ),
-  ...Object.entries(RELIGIOUS_ORG_GROUPS).flatMap(([dept, groups]) => 
+  ...Object.entries(RELIGIOUS_ORG_GROUPS).flatMap(([dept, groups]) =>
     groups.map(name => ({ name, category: "Religious Organization", department: dept }))
   ),
   { name: "General Donation", category: "Parishioner", department: "GENERAL" },
