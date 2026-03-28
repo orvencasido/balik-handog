@@ -30,7 +30,7 @@ export default function RootLayout({
     >
       <body className="h-full bg-background flex text-foreground">
         {!isLoginPage && <Sidebar />}
-        <div className={`flex-1 flex flex-col min-h-screen ${!isLoginPage ? "pl-64" : ""}`}>
+        <div className={`flex-1 flex flex-col min-h-screen ${!isLoginPage ? "pl-52" : ""}`}>
           <main className={`flex-1 flex flex-col ${!isLoginPage ? "p-8" : ""}`}>
             {children}
           </main>

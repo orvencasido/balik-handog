@@ -33,7 +33,7 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-64 bg-white h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-gray-100 font-sans shadow-sm">
+    <aside className="w-52 bg-white h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-gray-100 font-sans shadow-sm">
       {/* Sidebar Header Space */}
       <div className="py-10 flex flex-col items-center px-8 border-b border-gray-50 space-y-4">
         <div className="bg-emerald-600 p-2.5 rounded-xl shadow-lg shadow-emerald-700/10 active:scale-95 transition-transform duration-500">

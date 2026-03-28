@@ -47,6 +47,7 @@ export default function DonationsList() {
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [activeDetail, setActiveDetail] = useState<{ title: string, content: string } | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
@@ -175,44 +176,63 @@ export default function DonationsList() {
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[900px]">
+          <table className="w-full text-left min-w-full table-auto">
             <thead>
               <tr className="bg-zinc-50 border-b border-gray-100">
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Date</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Recorder</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
-                <th className="px-5 py-4 text-[9px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Date</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Recorder</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {displayDonations.map((donation) => (
-                <tr key={donation.id} className="hover:bg-emerald-50/30 transition-colors group">
-                  <td className="px-5 py-3 font-black text-sm text-emerald-600 tabular-nums whitespace-nowrap">₱{donation.amount.toLocaleString()}</td>
-                  <td className="px-5 py-3">
-                    <span className="font-bold text-xs text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase whitespace-nowrap">{donation.giverName}</span>
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{donation.category || 'N/A'}</span>
-                  </td>
-                  <td className="px-5 py-3 text-[10px] font-bold text-zinc-400">{formatDate(donation.donationDate)}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-emerald-900 opacity-60 group-hover:opacity-100 transition-all uppercase tracking-tight">{donation.ministry || donation.groupName || 'General'}</span>
-                      {donation.department && <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{donation.department}</span>}
+                <tr key={donation.id} className="h-14 hover:bg-emerald-50/5 transition-colors group border-b border-gray-50/50">
+                  <td className="px-4 h-14 align-middle whitespace-nowrap">
+                    <div className="flex items-center h-full tabular-nums">
+                      <span className="text-[10px] font-black text-emerald-600">₱{donation.amount.toLocaleString()}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight italic whitespace-nowrap">{donation.recordedBy || 'System'}</span>
+                  <td className="px-4 h-14 align-middle">
+                    <div className="flex items-center h-full">
+                      <span className="text-[9px] font-black text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase tracking-tight truncate max-w-[150px] whitespace-nowrap" title={donation.giverName}>{donation.giverName}</span>
+                    </div>
                   </td>
-                  <td className="px-5 py-3 text-center">
-                    <span className="text-[10px] font-black text-emerald-950 tabular-nums">{donation.noOfGivers || 1}</span>
+                  <td className="px-4 h-14 align-middle">
+                    <div className="flex items-center h-full">
+                      <span className="text-[9px] font-black text-emerald-800 uppercase tracking-tight whitespace-nowrap">{donation.category || 'N/A'}</span>
+                    </div>
                   </td>
-                  <td className="px-5 py-3 text-right">
-                    <div className="flex justify-end gap-2">
+                  <td className="px-4 h-14 align-middle text-center">
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-[9px] font-bold text-zinc-400 whitespace-nowrap">{formatDate(donation.donationDate)}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle">
+                    <div
+                      className="flex flex-col justify-center h-full min-w-0"
+                      title={`${donation.ministry || donation.groupName || 'General'}${donation.department ? ` - ${donation.department}` : ""}`}
+                    >
+                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight truncate max-w-[200px] whitespace-nowrap">{donation.ministry || donation.groupName || 'General'}</span>
+                      {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest truncate max-w-[200px] whitespace-nowrap mt-0.5">{donation.department}</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle">
+                    <div className="flex items-center h-full">
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic truncate max-w-[120px] whitespace-nowrap" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle text-center">
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-[9px] font-black text-emerald-950 tabular-nums">{donation.noOfGivers || 1}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle text-right">
+                    <div className="flex items-center justify-end h-full gap-2">
                       <button
                         onClick={() => donation.notes && setSelectedNote(donation.notes)}
                         className={`p-2 rounded-lg transition-all ${donation.notes ? 'bg-zinc-50 text-zinc-400 hover:bg-emerald-50 hover:text-emerald-600' : 'opacity-0 pointer-events-none'}`}
