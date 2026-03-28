@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
         ].map((s, i) => (
           <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-emerald-200 transition-all">
             <h3 className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none mb-1">{s.label}</h3>
-            <p className="text-xl font-black text-emerald-950 tabular-nums group-hover:text-emerald-600 transition-colors">{s.val}</p>
+            <p className="text-xl font-black text-emerald-950 tabular-nums group-hover:text-emerald-600 transition-colors whitespace-nowrap">{s.val}</p>
           </div>
         ))}
       </div>
@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
               <div key={m.key} className="group">
                 <div className="flex justify-between text-[10px] font-black text-emerald-900 uppercase tracking-tight mb-2">
                   <span>{m.key} ({m.name})</span>
-                  <span className="tabular-nums">₱ {m.total.toLocaleString()}</span>
+                  <span className="tabular-nums whitespace-nowrap">₱{m.total.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex-1 h-2 bg-zinc-50 rounded-full overflow-hidden">
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
                     <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{c.count} total contributions</p>
                   </div>
                 </div>
-                <div className="text-sm font-black text-emerald-950 tabular-nums">₱ {c.total.toLocaleString()}</div>
+                <div className="text-sm font-black text-emerald-950 tabular-nums whitespace-nowrap">₱{c.total.toLocaleString()}</div>
               </div>
             ))}
             {topContributors.length === 0 && <p className="text-center py-10 text-[10px] font-black italic text-zinc-300 uppercase">No contributor records found</p>}
@@ -225,7 +225,7 @@ export default function AnalyticsPage() {
                 <div key={day} className="space-y-1">
                   <div className="flex justify-between text-[9px] font-black text-emerald-900/40 uppercase tracking-widest">
                     <span>{day}</span>
-                    <span>{amount > 0 ? `₱ ${amount.toLocaleString()}` : '--'}</span>
+                    <span>{amount > 0 ? <span className="whitespace-nowrap">₱{amount.toLocaleString()}</span> : '--'}</span>
                   </div>
                   <div className="h-1 w-full bg-zinc-50 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-all" style={{ width: `${perc}%` }} />
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
               <div key={dept.name} className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">RANK 0{i + 1}</span>
-                  <div className="text-white font-black text-lg tabular-nums">₱ {dept.total.toLocaleString()}</div>
+                  <div className="text-white font-black text-lg tabular-nums whitespace-nowrap">₱{dept.total.toLocaleString()}</div>
                 </div>
                 <div className="text-white font-black text-xs uppercase tracking-tight mb-2">{dept.name}</div>
                 <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">

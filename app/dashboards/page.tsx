@@ -287,19 +287,19 @@ export default function Dashboard() {
         {/* KPI CARDS - Spanning Top row */}
         <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
           {[
-            { label: activeMonth === -1 ? "Annual Summary" : "Current Month Summary", val: `₱ ${monthTotal.toLocaleString()}` },
+            { label: activeMonth === -1 ? "Annual Summary" : "Current Month Summary", val: `₱${monthTotal.toLocaleString()}` },
             { label: "Contributors", val: monthGivers },
-            { label: "Avg Contribution", val: `₱ ${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+            { label: "Avg Contribution", val: `₱${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
             {
               label: "Highest Single Gift",
-              val: `₱ ${monthLargest?.amount.toLocaleString() || 0}`,
+              val: `₱${monthLargest?.amount.toLocaleString() || 0}`,
               subtitle: monthLargest ? [monthLargest.giverName, (!monthLargest.ministry || monthLargest.ministry === "N/A") ? "Parishioner" : monthLargest.ministry] : []
             }
           ].map((stat, i) => (
             <div key={i} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5 flex flex-col justify-center gap-2 hover:border-emerald-100 transition-all group">
               <span className="text-[8px] font-bold text-emerald-900/40 uppercase tracking-[0.15em] leading-none">{stat.label}</span>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors">{stat.val}</span>
+                <span className="text-xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
                 <div className="flex flex-col min-h-[22px] justify-center">
                   {(Array.isArray(stat.subtitle) ? stat.subtitle : [stat.subtitle]).filter(Boolean).map((line, idx) => (
                     <span key={idx} className={`${idx === 1 ? 'text-[7px] font-semibold text-emerald-800/40' : 'text-[8px] font-bold text-emerald-700/70'} uppercase tracking-widest truncate leading-tight`}>
@@ -319,7 +319,7 @@ export default function Dashboard() {
               <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
               Donation Trend Analysis ({activeYear})
             </h2>
-            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums">Peak: ₱{yearMax.toLocaleString()}</div>
+            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
           </div>
 
           <div className="flex-1 relative min-h-0">
