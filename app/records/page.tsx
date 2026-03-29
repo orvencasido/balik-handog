@@ -207,7 +207,7 @@ export default function DonationsList() {
                   </td>
                   <td className="px-4 h-14 align-middle">
                     <div className="flex items-center h-full">
-                      <span className="text-[9px] font-black text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase tracking-tight truncate max-w-[150px] whitespace-nowrap" title={donation.giverName}>{donation.giverName}</span>
+                      <span className="text-[9px] font-black text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase tracking-tight whitespace-nowrap" title={donation.giverName}>{donation.giverName}</span>
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle">
@@ -225,13 +225,13 @@ export default function DonationsList() {
                       className="flex flex-col justify-center h-full min-w-0"
                       title={`${donation.ministry || donation.groupName || 'General'}${donation.department ? ` - ${donation.department}` : ""}`}
                     >
-                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight truncate max-w-[200px] whitespace-nowrap">{donation.ministry || donation.groupName || 'General'}</span>
-                      {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest truncate max-w-[200px] whitespace-nowrap mt-0.5">{donation.department}</span>}
+                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight whitespace-nowrap">{donation.ministry || donation.groupName || 'General'}</span>
+                      {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest whitespace-nowrap mt-0.5">{donation.department}</span>}
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle">
                     <div className="flex items-center h-full">
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic truncate max-w-[120px] whitespace-nowrap" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic whitespace-nowrap" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle text-center">
