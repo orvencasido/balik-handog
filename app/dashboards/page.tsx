@@ -97,8 +97,8 @@ export default function Dashboard() {
       if (r === f) return true;
 
       // Split by common delimiters used in the app ( - and | )
-      const rParts = r.split(/[\-\|]/).map(p => p.trim()).filter(p => p.length > 0);
-      const fParts = f.split(/[\-\|]/).map(p => p.trim()).filter(p => p.length > 0);
+      const rParts = r.split(/[-|]/).map(p => p.trim()).filter(p => p.length > 0);
+      const fParts = f.split(/[-|]/).map(p => p.trim()).filter(p => p.length > 0);
 
       // Match if the record value contains the filter value or vice versa, 
       // or if they share any component parts (e.g., "KAWAN I" matches "KAWAN I - SAN PEDRO")
@@ -154,8 +154,8 @@ export default function Dashboard() {
 
   const yearMax = Math.max(...monthlyStats.map(s => s.total), 1);
   const GRAPH_WIDTH = 420;
-  const GRAPH_HEIGHT = 160;
-  const GRAPH_PLOT_HEIGHT = 140;
+  const GRAPH_HEIGHT = 110;
+  const GRAPH_PLOT_HEIGHT = 95;
 
   const generatePath = () => {
     if (monthlyStats.length === 0) return "";
@@ -175,13 +175,13 @@ export default function Dashboard() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Initializing Dashboard...</div>;
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden gap-6 font-sans w-full bg-white">
+    <div className="flex-1 flex flex-col min-h-screen lg:h-screen overflow-auto lg:overflow-hidden gap-4 lg:gap-6 font-sans w-full bg-white">
 
       {/* 1. COMPACT HEADER */}
-      <header className="flex flex-col justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <header className="flex flex-col justify-between gap-4 bg-white px-4 sm:px-6 py-4 sm:py-6 rounded-2xl border border-gray-100 shadow-sm shrink-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div>
-            <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
+            <h1 className="text-base sm:text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
             <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{activeMonth === -1 ? "All Months" : FULL_MONTHS[activeMonth]} Donation • {activeYear}</p>
           </div>
 
@@ -214,10 +214,10 @@ export default function Dashboard() {
         </div>
 
         {/* Filters Row */}
-        <div className="flex flex-nowrap items-center gap-1.5 pt-3 border-t border-gray-50 overflow-x-auto w-full">
+        <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-gray-50 w-full">
           {/* Quick Search */}
-          <div className="flex items-center gap-1.5 bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100 flex-1 min-w-[200px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest shrink-0 w-[50px]">Ministry:</span>
+          <div className="flex items-center gap-1.5 bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100 flex-1 min-w-[160px] sm:min-w-[200px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest shrink-0 hidden sm:inline w-[50px]">Ministry:</span>
             <input
               type="text"
               list="dashboard-ministry-list"
@@ -252,7 +252,7 @@ export default function Dashboard() {
           </div>
 
           {/* Category Filter */}
-          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[130px] shrink-0">
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-full sm:w-[130px] shrink-0">
             <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Category:</span>
             <select
               value={activeCategory}
@@ -273,8 +273,8 @@ export default function Dashboard() {
           </div>
 
           {/* Department Filter */}
-          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[160px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Department:</span>
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-full sm:w-[160px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Dept:</span>
             <select
               value={activeDept}
               onChange={(e) => {
@@ -295,7 +295,7 @@ export default function Dashboard() {
           </div>
 
           {/* Ministry Filter */}
-          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 flex-1 min-w-[150px] shrink-0">
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 flex-1 min-w-[120px] sm:min-w-[150px] shrink-0">
             <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Ministry:</span>
             <select
               value={activeMinistry}
@@ -334,20 +334,20 @@ export default function Dashboard() {
               : "text-red-500 hover:text-red-700 cursor-pointer"
               }`}
           >
-            Reset Filters
+            Reset
           </button>
         </div>
 
-        <h2 className="pt-3 text-[11px] sm:text-[13px] font-black text-zinc-400 uppercase tracking-widest text-center w-full">
-          Category: <span className="text-emerald-600">{activeCategory}</span> <span className="text-zinc-300 mx-1.5">|</span> Department: <span className="text-emerald-600">{activeDept}</span> <span className="text-zinc-300 mx-1.5">|</span> Ministry: <span className="text-emerald-600">{activeMinistry}</span>
+        <h2 className="pt-3 text-[9px] sm:text-[11px] lg:text-[13px] font-black text-zinc-400 uppercase tracking-widest text-center w-full">
+          Category: <span className="text-emerald-600">{activeCategory}</span> <span className="text-zinc-300 mx-0.5 sm:mx-1.5">•</span> Dept: <span className="text-emerald-600">{activeDept}</span> <span className="text-zinc-300 mx-0.5 sm:mx-1.5">•</span> Ministry: <span className="text-emerald-600">{activeMinistry}</span>
         </h2>
       </header>
 
-      {/* MAIN CONTENT GRID - SINGLE PAGE LAYOUT */}
-      <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-4">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 min-h-0 flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:grid-rows-4 lg:gap-4">
 
-        {/* KPI CARDS - Spanning Top row */}
-        <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
+        {/* KPI CARDS */}
+        <div className="lg:col-span-12 lg:row-span-1 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             { label: activeMonth === -1 ? "Total Donations" : "Current Month Donations", val: `₱${monthTotal.toLocaleString()}` },
             { label: "Contributors", val: monthGivers },
@@ -358,13 +358,13 @@ export default function Dashboard() {
               subtitle: monthLargest ? [monthLargest.giverName, (!monthLargest.ministry || monthLargest.ministry === "N/A") ? "Parishioner" : monthLargest.ministry] : []
             }
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5 flex flex-col justify-center gap-2 hover:border-emerald-100 transition-all group">
-              <span className="text-[10px] font-black text-emerald-900/70 uppercase tracking-[0.15em] leading-none">{stat.label}</span>
+            <div key={i} className="bg-white p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5 flex flex-col justify-center gap-1.5 sm:gap-2 hover:border-emerald-100 transition-all group">
+              <span className="text-[8px] sm:text-[10px] font-black text-emerald-900/70 uppercase tracking-[0.1em] sm:tracking-[0.15em] leading-none">{stat.label}</span>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-3xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
-                <div className="flex flex-col min-h-[22px] justify-center">
+                <span className="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1 sm:mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
+                <div className="flex flex-col min-h-[18px] sm:min-h-[22px] justify-center">
                   {(Array.isArray(stat.subtitle) ? stat.subtitle : [stat.subtitle]).filter(Boolean).map((line, idx) => (
-                    <span key={idx} className={`${idx === 1 ? 'text-[7px] font-semibold text-emerald-800/40' : 'text-[8px] font-bold text-emerald-700/70'} uppercase tracking-widest truncate leading-tight`}>
+                    <span key={idx} className={`${idx === 1 ? 'text-[6px] sm:text-[7px] font-semibold text-emerald-800/40' : 'text-[7px] sm:text-[8px] font-bold text-emerald-700/70'} uppercase tracking-widest truncate leading-tight`}>
                       {line}
                     </span>
                   ))}
@@ -374,16 +374,16 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* TREND GRAPH - Central Main Body */}
-        <div className="col-span-12 row-span-3 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
-          <div className="flex justify-between items-center mb-4 shrink-0">
-            <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest flex flex-wrap items-center gap-3 w-full min-w-0 pr-4">
-              <div className="flex items-center gap-3 shrink-0">
+        {/* TREND GRAPH */}
+        <div className="lg:col-span-12 lg:row-span-2 bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col min-h-[200px] sm:min-h-[220px]">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 shrink-0 gap-1">
+            <h2 className="text-[9px] sm:text-[10px] font-black text-emerald-950 uppercase tracking-widest flex flex-wrap items-center gap-2 sm:gap-3 w-full min-w-0 pr-4">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
-                <span>Donation Trend Analyis ({activeYear})</span>
+                <span>Donation Trend ({activeYear})</span>
               </div>
               {(activeCategory !== "All" || activeDept !== "All" || activeMinistry !== "All") && (
-                <span className="text-emerald-700/60 font-bold truncate uppercase tracking-widest">
+                <span className="text-emerald-700/60 font-bold truncate uppercase tracking-widest text-[8px]">
                   — {[
                     activeCategory !== "All" ? activeCategory : null,
                     activeDept !== "All" ? activeDept : null,
@@ -392,16 +392,16 @@ export default function Dashboard() {
                 </span>
               )}
             </h2>
-            <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
+            <div className="text-[8px] sm:text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
           </div>
 
           <div className="flex-1 relative min-h-0">
             {/* Y-Axis labels */}
-            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between items-end pr-3">
+            <div className="absolute left-0 top-0 bottom-8 w-10 sm:w-12 flex flex-col justify-between items-end pr-2 sm:pr-3">
               {[1, 0.5, 0].map((p) => {
                 const val = yearMax * p;
                 return (
-                  <span key={p} className="text-[8px] font-bold text-zinc-300 tabular-nums">
+                  <span key={p} className="text-[7px] sm:text-[8px] font-bold text-zinc-300 tabular-nums">
                     {val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val.toFixed(0)}
                   </span>
                 );
@@ -409,24 +409,20 @@ export default function Dashboard() {
             </div>
 
             {/* SVG Content */}
-            <div className="absolute left-14 right-4 top-0 bottom-8">
+            <div className="absolute left-10 sm:left-14 right-2 sm:right-4 top-0 bottom-8">
               <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`} preserveAspectRatio="none">
                 <line x1="0" y1="80" x2={GRAPH_WIDTH} y2="80" stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 <line x1="0" y1={GRAPH_HEIGHT} x2={GRAPH_WIDTH} y2={GRAPH_HEIGHT} stroke="#f1f5f9" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
                 <defs>
                   <linearGradient id="trend-grad-area" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
-                    <stop offset="35%" stopColor="#10b981" stopOpacity="0.10" />
+                    <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
                     <stop offset="100%" stopColor="#059669" stopOpacity="0.0" />
                   </linearGradient>
-                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#059669" floodOpacity="0.4" />
-                  </filter>
                 </defs>
 
                 <path d={`${generatePath()} L${GRAPH_WIDTH},${GRAPH_HEIGHT} L0,${GRAPH_HEIGHT} Z`} fill="url(#trend-grad-area)" />
-                <path d={generatePath()} fill="none" stroke="#10b981" strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter="url(#glow)" />
+                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
               </svg>
 
               {/* HTML Overlay for Points and Tooltips */}
@@ -459,7 +455,7 @@ export default function Dashboard() {
 
                       {!isHovered && s.total > 0 && (
                         <div
-                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[9px] text-emerald-900 font-black' : 'text-[7px] text-emerald-700/60 font-bold'
+                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap hidden sm:block ${isActive ? 'text-[9px] text-emerald-900 font-black' : 'text-[7px] text-emerald-700/60 font-bold'
                             }`}
                           style={{
                             left: '50%', top: '50%',
@@ -491,9 +487,9 @@ export default function Dashboard() {
             </div>
 
             {/* X-Axis labels */}
-            <div className="absolute left-14 right-4 bottom-0 flex justify-between px-1">
+            <div className="absolute left-10 sm:left-14 right-2 sm:right-4 bottom-0 flex justify-between px-0 sm:px-1">
               {MONTHS.map((name, i) => (
-                <span key={i} className={`text-[9px] font-black uppercase ${i === activeMonth ? 'text-emerald-700 underline underline-offset-4 decoration-2' : 'text-zinc-300'}`}>
+                <span key={i} className={`text-[7px] sm:text-[9px] font-black uppercase ${i === activeMonth ? 'text-emerald-700 underline underline-offset-4 decoration-2' : 'text-zinc-300'}`}>
                   {name}
                 </span>
               ))}

@@ -138,22 +138,24 @@ export default function DonationsList() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Scanning Ledger...</div>;
 
   return (
-    <div className="flex-1 space-y-6 font-sans w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm">
-        <div>
-          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Donation List</h1>
-          <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
-            {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
-          </p>
+    <div className="flex-1 space-y-4 sm:space-y-6 font-sans w-full">
+      <div className="flex flex-col gap-3 sm:gap-4 bg-white px-4 sm:px-6 py-4 sm:py-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Donation List</h1>
+            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
+              {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
+            </p>
+          </div>
+
+          {/* Total Donations Display */}
+          <div className="hidden sm:flex flex-col items-center md:items-start bg-emerald-50/50 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl border border-emerald-100/50 min-w-[140px] sm:min-w-[160px] shadow-sm shadow-emerald-900/5">
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1.5 sm:mb-2">Total Amount (Displayed)</span>
+            <span className="text-base sm:text-lg font-black text-emerald-600 tabular-nums leading-none tracking-tight">₱{totalAmount.toLocaleString()}</span>
+          </div>
         </div>
 
-        {/* Total Donations Display */}
-        <div className="hidden sm:flex flex-col items-center md:items-start bg-emerald-50/50 px-6 py-3 rounded-2xl border border-emerald-100/50 min-w-[160px] shadow-sm shadow-emerald-900/5">
-          <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-2">Total Amount (Displayed)</span>
-          <span className="text-lg font-black text-emerald-600 tabular-nums leading-none tracking-tight">₱{totalAmount.toLocaleString()}</span>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full">
           <div className="relative w-full sm:w-80 group">
             <input
               type="text"
@@ -180,9 +182,64 @@ export default function DonationsList() {
             </button>
           )}
         </div>
+
+        {/* Mobile Total Amount */}
+        <div className="sm:hidden flex items-center justify-between bg-emerald-50/50 px-4 py-2.5 rounded-xl border border-emerald-100/50">
+          <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em]">Total (Displayed)</span>
+          <span className="text-sm font-black text-emerald-600 tabular-nums">₱{totalAmount.toLocaleString()}</span>
+        </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      {/* MOBILE CARD VIEW */}
+      <div className="sm:hidden space-y-3">
+        {displayDonations.map((donation) => (
+          <div key={donation.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-sm font-black text-emerald-600 tabular-nums">₱{donation.amount.toLocaleString()}</span>
+                <p className="text-[9px] font-black text-emerald-800 uppercase tracking-tight mt-0.5">{donation.giverName}</p>
+              </div>
+              <span className="text-[8px] font-bold text-zinc-400 whitespace-nowrap">{formatDate(donation.donationDate)}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-tight bg-zinc-50 px-2 py-1 rounded-md">{donation.category || 'N/A'}</span>
+              <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-tight bg-zinc-50 px-2 py-1 rounded-md">{donation.ministry || donation.groupName || 'General'}</span>
+              {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest">{donation.department}</span>}
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+              <div className="flex items-center gap-3">
+                <span className="text-[8px] font-bold text-zinc-400 italic">{donation.recordedBy || 'System'}</span>
+                <span className="text-[8px] font-black text-emerald-950">{donation.noOfGivers || 1} giver(s)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {donation.notes && (
+                  <button
+                    onClick={() => setSelectedNote(donation.notes)}
+                    className="p-1.5 rounded-lg bg-zinc-50 text-zinc-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => setEditingDonation(donation)}
+                    className="p-1.5 bg-zinc-50 text-zinc-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* DESKTOP TABLE VIEW */}
+      <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left min-w-full table-auto">
             <thead>
@@ -192,8 +249,8 @@ export default function DonationsList() {
                 <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
                 <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Date</th>
                 <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Recorder</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Givers</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none hidden lg:table-cell">Recorder</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center hidden lg:table-cell">Givers</th>
                 <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
               </tr>
             </thead>
@@ -229,12 +286,12 @@ export default function DonationsList() {
                       {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest whitespace-nowrap mt-0.5">{donation.department}</span>}
                     </div>
                   </td>
-                  <td className="px-4 h-14 align-middle">
+                  <td className="px-4 h-14 align-middle hidden lg:table-cell">
                     <div className="flex items-center h-full">
                       <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic whitespace-nowrap" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
                     </div>
                   </td>
-                  <td className="px-4 h-14 align-middle text-center">
+                  <td className="px-4 h-14 align-middle text-center hidden lg:table-cell">
                     <div className="flex items-center justify-center h-full">
                       <span className="text-[9px] font-black text-emerald-950 tabular-nums">{donation.noOfGivers || 1}</span>
                     </div>
@@ -271,7 +328,7 @@ export default function DonationsList() {
       </div>
 
       {!isSearching && donations.length > 15 && (
-        <div className="bg-zinc-50 p-6 text-center border-t border-gray-50">
+        <div className="bg-zinc-50 p-4 sm:p-6 text-center border-t border-gray-50">
           <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
             Total {donations.length} records in Donations. Use search bar to find specific entries.
           </p>
@@ -279,13 +336,13 @@ export default function DonationsList() {
       )}
 
       {isSearching && displayDonations.length === 0 && (
-        <div className="p-20 text-center">
+        <div className="p-12 sm:p-20 text-center">
           <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">No matching results for "{searchQuery}"</p>
+          <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">No matching results for &quot;{searchQuery}&quot;</p>
         </div>
       )}
 
@@ -293,7 +350,7 @@ export default function DonationsList() {
       {selectedNote && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/20 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden transform animate-in fade-in zoom-in duration-200">
-            <div className="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
+            <div className="bg-emerald-50 px-4 sm:px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
               <h3 className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Transaction Notes</h3>
               <button onClick={() => setSelectedNote(null)} className="text-emerald-600 hover:text-emerald-800 transition-colors">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -301,10 +358,10 @@ export default function DonationsList() {
                 </svg>
               </button>
             </div>
-            <div className="p-8">
+            <div className="p-6 sm:p-8">
               <p className="text-xs font-bold text-emerald-950 leading-relaxed whitespace-pre-wrap">{selectedNote}</p>
             </div>
-            <div className="p-6 bg-zinc-50 flex justify-end">
+            <div className="p-4 sm:p-6 bg-zinc-50 flex justify-end">
               <button
                 onClick={() => setSelectedNote(null)}
                 className="px-6 py-2 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg"
@@ -318,14 +375,14 @@ export default function DonationsList() {
 
       {/* Edit Modal */}
       {editingDonation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/20 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/20 backdrop-blur-sm">
           <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden transform animate-in fade-in zoom-in duration-200 h-[90vh] flex flex-col">
-            <div className="bg-white px-8 py-6 border-b border-gray-50 flex justify-between items-center shrink-0">
+            <div className="bg-white px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-50 flex justify-between items-center shrink-0">
               <div>
                 <h3 className="text-sm font-black text-emerald-950 uppercase tracking-tight">Edit Record</h3>
-                <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-1">Transaction ID: {editingDonation.id}</p>
+                <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-1 hidden sm:block">Transaction ID: {editingDonation.id}</p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   onClick={() => {
                     if (editingDonation) {
@@ -342,9 +399,9 @@ export default function DonationsList() {
                       });
                     }
                   }}
-                  className="px-4 py-2 bg-emerald-50 text-[9px] font-bold text-emerald-700 rounded-lg hover:bg-emerald-100 transition-all uppercase tracking-widest border border-emerald-100"
+                  className="px-3 sm:px-4 py-2 bg-emerald-50 text-[9px] font-bold text-emerald-700 rounded-lg hover:bg-emerald-100 transition-all uppercase tracking-widest border border-emerald-100"
                 >
-                  Clear All
+                  Clear
                 </button>
                 <button onClick={() => setEditingDonation(null)} className="p-2 hover:bg-zinc-50 rounded-xl transition-colors">
                   <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -354,15 +411,15 @@ export default function DonationsList() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Name</label>
                   <input
                     type="text"
                     value={editingDonation.giverName}
                     onChange={(e) => handleModalInputChange("giverName", e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -371,18 +428,18 @@ export default function DonationsList() {
                     type="number"
                     value={editingDonation.amount}
                     onChange={(e) => handleModalInputChange("amount", Number(e.target.value))}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category</label>
                   <select
                     value={editingDonation.category || ''}
                     onChange={(e) => handleModalInputChange("category", e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   >
                     <option value="">Select Category</option>
                     {DONATION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -393,7 +450,7 @@ export default function DonationsList() {
                   <select
                     value={editingDonation.department || ''}
                     onChange={(e) => handleModalInputChange("department", e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 disabled:opacity-30"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 disabled:opacity-30"
                     disabled={!editingDonation.category || editingDonation.category === "Parishioner"}
                   >
                     <option value="">
@@ -416,7 +473,7 @@ export default function DonationsList() {
                   list="edit-ministry-list"
                   value={editingDonation.ministry || editingDonation.groupName || ''}
                   onChange={(e) => handleModalInputChange("ministry", e.target.value)}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 disabled:opacity-30"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 disabled:opacity-30"
                   placeholder={editingDonation.category === "Parishioner" ? "Search disabled for Parishioners" : "Start typing ministry name..."}
                   disabled={editingDonation.category === "Parishioner"}
                 />
@@ -427,14 +484,14 @@ export default function DonationsList() {
                 </datalist>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Givers</label>
                   <input
                     type="number"
                     value={editingDonation.noOfGivers || 1}
                     onChange={(e) => handleModalInputChange("noOfGivers", Number(e.target.value))}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -443,7 +500,7 @@ export default function DonationsList() {
                     type="text"
                     value={editingDonation.recordedBy || ''}
                     onChange={(e) => handleModalInputChange("recordedBy", e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -453,15 +510,15 @@ export default function DonationsList() {
                 <textarea
                   value={editingDonation.notes || ''}
                   onChange={(e) => handleModalInputChange("notes", e.target.value)}
-                  className="w-full px-5 py-4 bg-zinc-50 border border-gray-100 rounded-xl h-24 text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 resize-none"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl h-24 text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 resize-none"
                 />
               </div>
             </div>
 
-            <div className="p-8 bg-zinc-50 border-t border-gray-100 flex gap-4 shrink-0">
+            <div className="p-4 sm:p-8 bg-zinc-50 border-t border-gray-100 flex gap-3 sm:gap-4 shrink-0">
               <button
                 onClick={() => setEditingDonation(null)}
-                className="flex-1 py-4 bg-white border border-gray-200 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
+                className="flex-1 py-3 sm:py-4 bg-white border border-gray-200 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
               >
                 Cancel
               </button>
@@ -481,7 +538,7 @@ export default function DonationsList() {
                     setUpdateLoading(false);
                   }
                 }}
-                className="flex-1 py-4 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-700/10"
+                className="flex-1 py-3 sm:py-4 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-700/10"
               >
                 {updateLoading ? 'Saving...' : 'Save Changes'}
               </button>

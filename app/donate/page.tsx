@@ -178,35 +178,37 @@ export default function AddDonation() {
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold italic">Checking access...</div>;
 
   return (
-    <div className="flex-1 space-y-5 font-sans w-full min-h-0 flex flex-col">
+    <div className="flex-1 space-y-4 sm:space-y-5 font-sans w-full min-h-0 flex flex-col">
       {/* Header - Compact Glass Style */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/80 backdrop-blur-md px-6 py-5 rounded-2xl border border-zinc-100 shadow-sm shadow-zinc-200/50 shrink-0">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white/80 backdrop-blur-md px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border border-zinc-100 shadow-sm shadow-zinc-200/50 shrink-0">
         <div>
-          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Record Donation</h1>
+          <h1 className="text-base sm:text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Record Donation</h1>
           <p className="text-emerald-700/60 font-bold text-[7px] uppercase tracking-widest mt-1">Balik Handog Insert Donation</p>
         </div>
 
         {status ? (
-          <div className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all animate-in fade-in slide-in-from-right-4 duration-300 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
+          <div className={`px-4 sm:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all animate-in fade-in slide-in-from-right-4 duration-300 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
             }`}>
             <span className={`h-2 w-2 rounded-full animate-pulse ${status.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
             {status.message}
           </div>
         ) : (
-          <div className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 border border-zinc-100 bg-zinc-50/50 text-zinc-400">
+          <div className="px-4 sm:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 border border-zinc-100 bg-zinc-50/50 text-zinc-400">
             <span className="h-2 w-2 rounded-full bg-zinc-200"></span>
             Donation Status
           </div>
         )}
       </header>
 
-      {/* Main Entry Panel - Super Compact Grid */}
-      <div className="flex-1 bg-white rounded-2xl border border-zinc-100 shadow-xl shadow-zinc-200/20 p-5 flex flex-col min-h-0 overflow-hidden">
+      {/* Main Entry Panel */}
+      <div className="flex-1 bg-white rounded-2xl border border-zinc-100 shadow-xl shadow-zinc-200/20 p-4 sm:p-5 flex flex-col min-h-0 overflow-auto lg:overflow-hidden">
         <form onSubmit={handleSubmit} className="h-full flex flex-col min-h-0">
-          <div className="grid grid-cols-12 gap-x-8 gap-y-3 min-h-0 overflow-hidden">
+          {/* Mobile layout: single column stack */}
+          {/* Desktop layout: 12-col grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 lg:gap-x-8 gap-y-3 min-h-0 lg:overflow-hidden">
 
-            {/* Upper Section: Identifiers & Metadata */}
-            <div className="col-span-7 space-y-1">
+            {/* Quick Search Ministry */}
+            <div className="lg:col-span-7 space-y-1">
               <div className="flex items-center justify-between px-1">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1">Quick Search Ministry</label>
                 {isQuickSearchSelected && <LockIcon />}
@@ -229,7 +231,8 @@ export default function AddDonation() {
               </datalist>
             </div>
 
-            <div className="col-span-5 grid grid-cols-2 gap-3">
+            {/* Date and Givers */}
+            <div className="lg:col-span-5 grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Log Date</label>
                 <input
@@ -253,8 +256,8 @@ export default function AddDonation() {
               </div>
             </div>
 
-            {/* Middle Section: Classification & Recorder */}
-            <div className="col-span-7 grid grid-cols-2 gap-3">
+            {/* Category and Department */}
+            <div className="lg:col-span-7 grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Category</label>
                 <div className="relative">
@@ -311,7 +314,8 @@ export default function AddDonation() {
               </div>
             </div>
 
-            <div className="col-span-5 space-y-1">
+            {/* Recorded By */}
+            <div className="lg:col-span-5 space-y-1">
               <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Recorded By</label>
               <input
                 type="text"
@@ -323,8 +327,8 @@ export default function AddDonation() {
               />
             </div>
 
-            {/* Lower Section: Transaction Details & Notes Alignment */}
-            <div className="col-span-7 space-y-3">
+            {/* Ministry, Name, Amount */}
+            <div className="lg:col-span-7 space-y-3">
               <div className="space-y-1">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Ministry</label>
                 <div className="relative">
@@ -376,14 +380,15 @@ export default function AddDonation() {
               </div>
             </div>
 
-            <div className="col-span-5 flex flex-col h-full min-h-0">
+            {/* Notes */}
+            <div className="lg:col-span-5 flex flex-col h-full min-h-0">
               <div className="flex-1 flex flex-col space-y-1 min-h-0">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Transaction Notes</label>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  className="flex-1 w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400 resize-none"
+                  className="flex-1 w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400 resize-none min-h-[80px] lg:min-h-0"
                   placeholder="Enter Notes, eg. AR No."
                 />
               </div>
@@ -391,7 +396,7 @@ export default function AddDonation() {
           </div>
 
           {/* Unified Action Footer */}
-          <div className="grid grid-cols-2 gap-4 shrink-0 mt-auto">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 shrink-0 mt-4 lg:mt-auto">
             <button
               type="button"
               onClick={clearForm}
