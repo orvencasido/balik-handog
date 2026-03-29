@@ -48,6 +48,12 @@ export default function DonationsList() {
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [activeDetail, setActiveDetail] = useState<{ title: string, content: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
@@ -127,11 +133,13 @@ export default function DonationsList() {
     );
   });
 
-  // "Don't show everything all at once"
-  // If no search query, only show the 15 most recent records.
-  // If searching, show all matches.
+  // Pagination logic
   const isSearching = searchQuery.trim().length > 0;
-  const displayDonations = isSearching ? filteredDonations : donations.slice(0, 15);
+  const totalPages = Math.ceil(filteredDonations.length / itemsPerPage);
+  const displayDonations = filteredDonations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalAmount = displayDonations.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
@@ -140,23 +148,18 @@ export default function DonationsList() {
   return (
     <div className="flex-1 space-y-4 sm:space-y-6 font-sans w-full">
       <div className="flex flex-col gap-3 sm:gap-4 bg-white px-4 sm:px-6 py-4 sm:py-6 rounded-2xl border border-gray-100 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+          {/* 1. Header Text */}
+          <div className="shrink-0">
             <h1 className="text-base sm:text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Donation List</h1>
             <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
-              {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
+              Showing {filteredDonations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredDonations.length)} of {filteredDonations.length} records
             </p>
           </div>
 
-          {/* Total Donations Display */}
-          <div className="hidden sm:flex flex-col items-center md:items-start bg-emerald-50/50 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl border border-emerald-100/50 min-w-[140px] sm:min-w-[160px] shadow-sm shadow-emerald-900/5">
-            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1.5 sm:mb-2">Total Amount (Displayed)</span>
-            <span className="text-base sm:text-lg font-black text-emerald-600 tabular-nums leading-none tracking-tight">₱{totalAmount.toLocaleString()}</span>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full">
-          <div className="relative w-full sm:w-80 group">
+          {/* 2. Search Bar (Center) */}
+          <div className="relative w-full lg:max-w-md xl:max-w-lg group lg:mx-4 flex-1">
             <input
               type="text"
               placeholder="Search by Name or Ministry, etc..."
@@ -173,21 +176,28 @@ export default function DonationsList() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          {isAdmin && (
-            <button
-              onClick={() => router.push("/donate")}
-              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transform active:scale-95 transition-all shadow-md shadow-emerald-700/10"
-            >
-              New Record
-            </button>
-          )}
+
+          {/* 3. Actions & Total */}
+          <div className="flex flex-row items-stretch gap-3 shrink-0">
+            {/* Total Donations Display */}
+            <div className="flex flex-col justify-center items-start bg-emerald-50/50 px-4 sm:px-5 py-2.5 rounded-xl border border-emerald-100/50 min-w-[130px] sm:min-w-[160px] shadow-sm shadow-emerald-900/5 flex-1 lg:flex-none">
+              <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-tight mb-1">Total (Displayed)</span>
+              <span className="text-sm sm:text-lg font-black text-emerald-600 tabular-nums leading-none tracking-tight">₱{(Number(totalAmount) || 0).toLocaleString()}</span>
+            </div>
+
+            {isAdmin && (
+              <button
+                onClick={() => router.push("/donate")}
+                className="px-4 sm:px-6 flex items-center justify-center bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transform active:scale-95 transition-all shadow-md shadow-emerald-700/10 shrink-0"
+              >
+                New Record
+              </button>
+            )}
+          </div>
+
         </div>
 
-        {/* Mobile Total Amount */}
-        <div className="sm:hidden flex items-center justify-between bg-emerald-50/50 px-4 py-2.5 rounded-xl border border-emerald-100/50">
-          <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em]">Total (Displayed)</span>
-          <span className="text-sm font-black text-emerald-600 tabular-nums">₱{totalAmount.toLocaleString()}</span>
-        </div>
+
       </div>
 
       {/* MOBILE CARD VIEW */}
@@ -196,7 +206,7 @@ export default function DonationsList() {
           <div key={donation.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-sm font-black text-emerald-600 tabular-nums">₱{donation.amount.toLocaleString()}</span>
+                <span className="text-sm font-black text-emerald-600 tabular-nums">₱{(Number(donation.amount) || 0).toLocaleString()}</span>
                 <p className="text-[9px] font-black text-emerald-800 uppercase tracking-tight mt-0.5">{donation.giverName}</p>
               </div>
               <span className="text-[8px] font-bold text-zinc-400 whitespace-nowrap">{formatDate(donation.donationDate)}</span>
@@ -241,17 +251,17 @@ export default function DonationsList() {
       {/* DESKTOP TABLE VIEW */}
       <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-full table-auto">
+          <table className="w-full text-left min-w-full table-fixed">
             <thead>
               <tr className="bg-zinc-50 border-b border-gray-100">
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Amount</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Donor Name</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Category</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center">Date</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none">Ministry / Dept</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none hidden lg:table-cell">Recorder</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center hidden lg:table-cell">Givers</th>
-                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right">Actions</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none w-[12%]">Amount</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none w-[20%]">Donor Name</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none w-[15%]">Category</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none w-[12%]">Date</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none w-[20%]">Ministry / Dept</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none hidden lg:table-cell w-[8%]">Recorder</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-center hidden lg:table-cell w-[5%]">Givers</th>
+                <th className="px-4 py-4 text-[8px] font-black text-emerald-900/40 uppercase tracking-widest leading-none text-right w-[8%]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -259,21 +269,21 @@ export default function DonationsList() {
                 <tr key={donation.id} className="h-14 hover:bg-emerald-50/5 transition-colors group border-b border-gray-50/50">
                   <td className="px-4 h-14 align-middle whitespace-nowrap">
                     <div className="flex items-center h-full tabular-nums">
-                      <span className="text-[10px] font-black text-emerald-600">₱{donation.amount.toLocaleString()}</span>
+                      <span className="text-[10px] font-black text-emerald-600">₱{(Number(donation.amount) || 0).toLocaleString()}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle">
+                    <div className="flex items-center h-full min-w-0">
+                      <span className="text-[9px] font-black text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase tracking-tight truncate block w-full" title={donation.giverName}>{donation.giverName}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 h-14 align-middle">
+                    <div className="flex items-center h-full min-w-0">
+                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight truncate block w-full" title={donation.category || 'N/A'}>{donation.category || 'N/A'}</span>
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle">
                     <div className="flex items-center h-full">
-                      <span className="text-[9px] font-black text-emerald-800 group-hover:text-emerald-600 transition-colors uppercase tracking-tight whitespace-nowrap" title={donation.giverName}>{donation.giverName}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 h-14 align-middle">
-                    <div className="flex items-center h-full">
-                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight whitespace-nowrap">{donation.category || 'N/A'}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 h-14 align-middle text-center">
-                    <div className="flex items-center justify-center h-full">
                       <span className="text-[9px] font-bold text-zinc-400 whitespace-nowrap">{formatDate(donation.donationDate)}</span>
                     </div>
                   </td>
@@ -282,13 +292,13 @@ export default function DonationsList() {
                       className="flex flex-col justify-center h-full min-w-0"
                       title={`${donation.ministry || donation.groupName || 'General'}${donation.department ? ` - ${donation.department}` : ""}`}
                     >
-                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight whitespace-nowrap">{donation.ministry || donation.groupName || 'General'}</span>
-                      {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest whitespace-nowrap mt-0.5">{donation.department}</span>}
+                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight truncate w-full block">{donation.ministry || donation.groupName || 'General'}</span>
+                      {donation.department && <span className="text-[7px] font-bold text-zinc-300 uppercase tracking-widest truncate w-full block mt-0.5">{donation.department}</span>}
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle hidden lg:table-cell">
-                    <div className="flex items-center h-full">
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic whitespace-nowrap" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
+                    <div className="flex items-center h-full min-w-0">
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic truncate block w-full" title={donation.recordedBy || 'System'}>{donation.recordedBy || 'System'}</span>
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle text-center hidden lg:table-cell">
@@ -327,11 +337,25 @@ export default function DonationsList() {
         </div>
       </div>
 
-      {!isSearching && donations.length > 15 && (
-        <div className="bg-zinc-50 p-4 sm:p-6 text-center border-t border-gray-50">
-          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-            Total {donations.length} records in Donations. Use search bar to find specific entries.
-          </p>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 sm:gap-6 py-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-900 disabled:opacity-30 disabled:hover:text-emerald-600 transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-[10px] font-black text-emerald-900/40 uppercase tracking-widest">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-900 disabled:opacity-30 disabled:hover:text-emerald-600 transition-colors"
+          >
+            Next
+          </button>
         </div>
       )}
 
@@ -417,7 +441,7 @@ export default function DonationsList() {
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Name</label>
                   <input
                     type="text"
-                    value={editingDonation.giverName}
+                    value={editingDonation.giverName || ""}
                     onChange={(e) => handleModalInputChange("giverName", e.target.value)}
                     className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
@@ -426,7 +450,7 @@ export default function DonationsList() {
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
                   <input
                     type="number"
-                    value={editingDonation.amount}
+                    value={editingDonation.amount ?? 0}
                     onChange={(e) => handleModalInputChange("amount", Number(e.target.value))}
                     className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
