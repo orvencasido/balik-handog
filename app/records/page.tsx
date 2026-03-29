@@ -133,6 +133,8 @@ export default function DonationsList() {
   const isSearching = searchQuery.trim().length > 0;
   const displayDonations = isSearching ? filteredDonations : donations.slice(0, 15);
 
+  const totalAmount = displayDonations.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
   if (loading) return <div className="flex-1 flex items-center justify-center text-emerald-900 font-bold">Scanning Ledger...</div>;
 
   return (
@@ -143,6 +145,12 @@ export default function DonationsList() {
           <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
             {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
           </p>
+        </div>
+
+        {/* Total Donations Display */}
+        <div className="hidden sm:flex flex-col items-center md:items-start bg-emerald-50/50 px-6 py-3 rounded-2xl border border-emerald-100/50 min-w-[160px] shadow-sm shadow-emerald-900/5">
+          <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-2">Total Amount (Displayed)</span>
+          <span className="text-lg font-black text-emerald-600 tabular-nums leading-none tracking-tight">₱{totalAmount.toLocaleString()}</span>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
