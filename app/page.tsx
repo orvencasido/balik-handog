@@ -4,6 +4,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../src/lib/firebase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import logoCathedral from "./logo-cathedral.svg";
 
 export async function login(email: string, password: string) {
   try {
@@ -39,10 +41,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-zinc-50 font-sans">
       <div className="w-full max-w-sm space-y-12">
         <div className="text-center space-y-6">
-          <div className="bg-emerald-600 p-2 w-fit rounded-xl shadow-xl mx-auto shadow-emerald-700/20 group hover:rotate-[360deg] transition-transform duration-1000">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
-            </svg>
+          <div className="w-fit mx-auto p-4">
+            <Image src={logoCathedral} alt="St. Ferdinand Cathedral Logo" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" priority />
           </div>
           <div className="space-y-2">
             <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">St. Ferdinand Cathedral</h1>
