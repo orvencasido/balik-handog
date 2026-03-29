@@ -6,11 +6,14 @@ import { useEffect, useState } from "react";
 import { auth, db } from "../../src/lib/firebase/client";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import Image from "next/image";
+import logoCathedral from "../logo-cathedral.svg";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboards", iconPath: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", adminOnly: false },
   { name: "Donate", href: "/donate", iconPath: "M10 21v-6.5a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 0-.5.5V21h3Z M21 12H3 M12 3a9 9 0 0 1 9 9v9H3v-9a9 9 0 0 1 9-9Z", adminOnly: true },
   { name: "Records", href: "/records", iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", adminOnly: false },
+  { name: "About", href: "/about", iconPath: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z", adminOnly: false },
 ];
 
 export default function Sidebar() {
@@ -42,11 +45,7 @@ export default function Sidebar() {
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-950 flex items-center justify-between px-4 py-3 shadow-lg shadow-emerald-950/30">
         <div className="flex items-center gap-3">
-          <div className="bg-emerald-900 p-1.5 rounded-lg border border-emerald-800/50">
-            <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
-            </svg>
-          </div>
+          <Image src={logoCathedral} alt="Cathedral Logo" priority className="w-8 h-8 object-contain" />
           <div>
             <h2 className="text-[10px] font-black text-white tracking-widest uppercase leading-none">St. Ferdinand</h2>
             <p className="text-[7px] font-bold text-emerald-400/60 uppercase tracking-tighter leading-none mt-0.5">Balik-Handog</p>
@@ -85,15 +84,13 @@ export default function Sidebar() {
         lg:translate-x-0
       `}>
         {/* Sidebar Header Space */}
-        <div className="py-10 flex flex-col items-start px-8 space-y-4">
-          <div className="bg-emerald-900 p-2.5 rounded-xl shadow-inner active:scale-95 transition-transform duration-500 w-fit border border-emerald-800/50">
-            <svg className="w-6 h-6 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
-            </svg>
+        <div className="py-4 flex flex-col items-center px-4 space-y-3">
+          <div className="rounded-2xl flex items-center justify-center w-full mt-2">
+            <Image src={logoCathedral} alt="Cathedral Logo" priority className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />
           </div>
-          <div className="text-left w-full">
+          <div className="text-center w-full">
             <h2 className="text-[12px] font-black text-white tracking-widest uppercase leading-tight">ST. FERDINAND <br /> CATHEDRAL</h2>
-            <p className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter mt-1.5 leading-none">Balik-Handog <br /> Donation Records</p>
+            <p className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter mt-1.5 leading-none px-2 text-center">Balik-Handog <br /> Donation Records</p>
             <div className="mt-4">
               {isAdmin ? (
                 <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-white text-[8px] font-black px-2.5 py-1.5 rounded-md uppercase tracking-widest shadow-lg shadow-emerald-500/20 leading-none">
