@@ -45,8 +45,8 @@ export default function LoginPage() {
             </svg>
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">ST. FERDINAND</h1>
-            <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Ledger Access</p>
+            <h1 className="text-xl font-black text-emerald-950 tracking-widest leading-none uppercase">St. Ferdinand Cathedral</h1>
+            <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest border-t border-emerald-100 pt-2 inline-block">Balik Handog Donation System</p>
           </div>
         </div>
 
@@ -60,25 +60,25 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Administrative Email</label>
+              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-5 py-4 bg-white border border-gray-100 rounded-xl focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm font-bold text-emerald-950 shadow-sm"
-                placeholder="admin@cathedral.org"
+                placeholder="Enter Email"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Access Key</label>
+              <label className="text-[9px] font-black text-emerald-900/40 uppercase tracking-widest block px-1">Password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-5 py-4 bg-white border border-gray-100 rounded-xl focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm font-bold text-emerald-950 shadow-sm"
-                placeholder="••••••••"
+                placeholder="Enter Password"
               />
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-[8px] font-black text-zinc-300 uppercase tracking-widest">
-          Secure Access Protocol v1.0
+          Created by Orven Casido | 2026
         </p>
       </div>
     </div>
