@@ -28,6 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <title>Balik Handog | St. Ferdinand Cathedral</title>
+      </head>
       <body className="h-full bg-background flex text-foreground">
         {!isLoginPage && <Sidebar />}
         <div className={`flex-1 flex flex-col min-h-screen ${!isLoginPage ? "pt-14 lg:pt-0 lg:pl-52" : ""}`}>
