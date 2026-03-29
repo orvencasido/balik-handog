@@ -33,17 +33,30 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-52 bg-white h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-gray-100 font-sans shadow-sm">
+    <aside className="w-52 bg-emerald-950 h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-emerald-900 font-sans shadow-xl shadow-emerald-950/20 text-white">
       {/* Sidebar Header Space */}
-      <div className="py-10 flex flex-col items-center px-8 border-b border-gray-50 space-y-4">
-        <div className="bg-emerald-600 p-2.5 rounded-xl shadow-lg shadow-emerald-700/10 active:scale-95 transition-transform duration-500">
-          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <div className="py-10 flex flex-col items-start px-8 space-y-4">
+        <div className="bg-emerald-900 p-2.5 rounded-xl shadow-inner active:scale-95 transition-transform duration-500 w-fit border border-emerald-800/50">
+          <svg className="w-6 h-6 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2a1 1 0 011 1v2h2V3a1 1 0 112 0v2h2V3a1 1 0 112 0v18a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7h-2v14a1 1 0 11-2 0V7H9v14a1 1 0 11-2 0V7H5v14a1 1 0 11-2 0V3a1 1 0 011-1h1v2h2V3a1 1 0 012 0v2h2V3a1 1 0 011-1z" />
           </svg>
         </div>
-        <div className="text-center">
-          <h2 className="text-[12px] font-black text-emerald-950 tracking-widest uppercase leading-tight">ST. FERDINAND <br /> CATHEDRAL</h2>
-          <p className="text-[9px] font-bold text-emerald-600/50 uppercase tracking-tighter mt-1.5 leading-none">Balik-Handog <br /> Donation Records {isAdmin ? '(Admin)' : '(Viewer)'}</p>
+        <div className="text-left w-full">
+          <h2 className="text-[12px] font-black text-white tracking-widest uppercase leading-tight">ST. FERDINAND <br /> CATHEDRAL</h2>
+          <p className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter mt-1.5 leading-none">Balik-Handog <br /> Donation Records</p>
+          <div className="mt-4">
+            {isAdmin ? (
+              <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-white text-[8px] font-black px-2.5 py-1.5 rounded-md uppercase tracking-widest shadow-lg shadow-emerald-500/20 leading-none">
+                <span className="h-1 w-1 rounded-full bg-white animate-pulse mt-px"></span>
+                Admin Access
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 bg-emerald-900 text-emerald-300 border border-emerald-800 text-[8px] font-black px-2.5 py-1.5 rounded-md uppercase tracking-widest leading-none">
+                <span className="h-1 w-1 rounded-full bg-emerald-400 mt-px"></span>
+                Viewer Access
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -57,12 +70,12 @@ export default function Sidebar() {
                 <Link
                   href={item.href}
                   className={`flex items-center group px-5 py-3.5 text-xs font-bold tracking-tight rounded-xl transition-all ${isActive
-                    ? "bg-emerald-50 text-emerald-800"
-                    : "text-zinc-400 hover:text-emerald-700 hover:bg-emerald-50/50"
+                    ? "bg-emerald-900 text-white"
+                    : "text-emerald-500/60 hover:text-emerald-200 hover:bg-emerald-900/50"
                     }`}
                 >
                   <svg
-                    className={`mr-3 h-5 w-5 ${isActive ? "text-emerald-600" : "text-zinc-400 group-hover:text-emerald-600"} transition-all`}
+                    className={`mr-3 h-5 w-5 ${isActive ? "text-emerald-400" : "text-emerald-600/50 group-hover:text-emerald-400"} transition-all`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -76,18 +89,15 @@ export default function Sidebar() {
           })}
       </nav>
 
-      <div className="p-4 mt-auto space-y-2 border-t border-gray-50">
+      <div className="p-4 mt-auto space-y-2">
         <button
           onClick={() => signOut(auth)}
-          className="w-full flex items-center gap-3 px-5 py-3.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-all"
+          className="w-full flex items-center justify-center px-5 py-3 text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30 rounded-xl transition-all shadow-sm"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7" />
-          </svg>
-          Sign Out
+          Log Out
         </button>
-        <div className="bg-zinc-50 p-4 rounded-xl flex items-center justify-center">
-          <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest text-center">v1.0 | © Orven Casido</span>
+        <div className="flex items-center justify-center">
+          <span className="text-[7px] text-emerald-500/40 font-bold uppercase tracking-widest text-center">v1.0 | © Orven Casido</span>
         </div>
       </div>
     </aside>

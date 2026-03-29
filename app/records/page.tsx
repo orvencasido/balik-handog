@@ -141,7 +141,7 @@ export default function DonationsList() {
     <div className="flex-1 space-y-6 font-sans w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Records List</h1>
+          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Donation List</h1>
           <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-1">
             {isSearching ? `Found ${filteredDonations.length} matches` : `Displaying latest ${displayDonations.length} of ${donations.length}`}
           </p>
@@ -157,7 +157,7 @@ export default function DonationsList() {
           <div className="relative w-full sm:w-80 group">
             <input
               type="text"
-              placeholder="Search by name or ministry..."
+              placeholder="Search by Name or Ministry, etc..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-300"
@@ -273,7 +273,7 @@ export default function DonationsList() {
       {!isSearching && donations.length > 15 && (
         <div className="bg-zinc-50 p-6 text-center border-t border-gray-50">
           <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-            Total {donations.length} records in ledger. Use search bar to find specific entries.
+            Total {donations.length} records in Donations. Use search bar to find specific entries.
           </p>
         </div>
       )}

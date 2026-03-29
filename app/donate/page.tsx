@@ -182,8 +182,8 @@ export default function AddDonation() {
       {/* Header - Compact Glass Style */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/80 backdrop-blur-md px-6 py-5 rounded-2xl border border-zinc-100 shadow-sm shadow-zinc-200/50 shrink-0">
         <div>
-          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Record Entry</h1>
-          <p className="text-emerald-700/60 font-bold text-[7px] uppercase tracking-widest mt-1">New transaction to ledger</p>
+          <h1 className="text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Record Donation</h1>
+          <p className="text-emerald-700/60 font-bold text-[7px] uppercase tracking-widest mt-1">Balik Handog Insert Donation</p>
         </div>
 
         {status ? (
@@ -195,7 +195,7 @@ export default function AddDonation() {
         ) : (
           <div className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 border border-zinc-100 bg-zinc-50/50 text-zinc-400">
             <span className="h-2 w-2 rounded-full bg-zinc-200"></span>
-            Ready for New Entry
+            Donation Status
           </div>
         )}
       </header>
@@ -208,7 +208,7 @@ export default function AddDonation() {
             {/* Upper Section: Identifiers & Metadata */}
             <div className="col-span-7 space-y-1">
               <div className="flex items-center justify-between px-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1">Quick Search</label>
+                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1">Quick Search Ministry</label>
                 {isQuickSearchSelected && <LockIcon />}
               </div>
               <input
@@ -218,7 +218,7 @@ export default function AddDonation() {
                 value={formData.ministry}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all placeholder:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder={formData.category === "Parishioner" ? "Search disabled" : (isQuickSearchSelected ? "Locked" : "Select or search...")}
+                placeholder={formData.category === "Parishioner" ? "Search disabled" : (isQuickSearchSelected ? "Locked" : "Type or Select Ministry | Auto-Fill Categories Below")}
                 required={formData.category !== "Parishioner"}
                 disabled={formData.category === "Parishioner" || isQuickSearchSelected}
               />
@@ -231,7 +231,7 @@ export default function AddDonation() {
 
             <div className="col-span-5 grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Receipt Date</label>
+                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Log Date</label>
                 <input
                   type="date"
                   name="donationDate"
@@ -241,7 +241,7 @@ export default function AddDonation() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Givers</label>
+                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">No. of Givers</label>
                 <input
                   type="number"
                   name="noOfGivers"
@@ -266,7 +266,7 @@ export default function AddDonation() {
                     required
                     disabled={isQuickSearchSelected}
                   >
-                    <option value="" disabled>Select Cat</option>
+                    <option value="" disabled>Select Category</option>
                     {DONATION_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
@@ -290,7 +290,7 @@ export default function AddDonation() {
                     disabled={!formData.category || formData.category === "Parishioner" || isQuickSearchSelected}
                   >
                     <option value="">
-                      {!formData.category ? "Select Cat" : (formData.category === "Parishioner" ? "GENERAL" : "Select Dept")}
+                      {!formData.category ? "Select Category First" : (formData.category === "Parishioner" ? "GENERAL" : "Select Dept")}
                     </option>
                     {formData.category === "MSK" && MSK_DEPARTMENTS.map((dept) => (
                       <option key={dept} value={dept}>{dept}</option>
@@ -319,7 +319,7 @@ export default function AddDonation() {
                 value={formData.recordedBy}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
-                placeholder="e.g. Maria Clara"
+                placeholder="Enter Recorded Full Name"
               />
             </div>
 
@@ -337,7 +337,7 @@ export default function AddDonation() {
                     disabled={!formData.category || !formData.department || isQuickSearchSelected}
                   >
                     <option value="">
-                      {!formData.department ? "Select Dept First" : "Select Min"}
+                      {!formData.department ? "Select Department First" : "Select Min"}
                     </option>
                     {getMinistryOptions().map((opt: string) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -351,7 +351,7 @@ export default function AddDonation() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Donor Name</label>
+                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Donator Name</label>
                 <input
                   type="text"
                   name="giverName"
@@ -359,7 +359,7 @@ export default function AddDonation() {
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
                   required
-                  placeholder="e.g. Maria Clara"
+                  placeholder="Enter Full Name"
                 />
               </div>
               <div className="space-y-1">
@@ -384,7 +384,7 @@ export default function AddDonation() {
                   value={formData.notes}
                   onChange={handleInputChange}
                   className="flex-1 w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400 resize-none"
-                  placeholder="Enter context for this transaction..."
+                  placeholder="Enter Notes, eg. AR No."
                 />
               </div>
             </div>

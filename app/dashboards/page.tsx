@@ -182,7 +182,7 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-lg font-black text-emerald-950 uppercase tracking-tight leading-none">Dashboard</h1>
-            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{activeMonth === -1 ? "All Months" : FULL_MONTHS[activeMonth]} Activity • {activeYear}</p>
+            <p className="text-emerald-700/60 font-bold text-[8px] uppercase tracking-widest mt-0.5">{activeMonth === -1 ? "All Months" : FULL_MONTHS[activeMonth]} Donation • {activeYear}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -217,7 +217,7 @@ export default function Dashboard() {
         <div className="flex flex-nowrap items-center gap-1.5 pt-3 border-t border-gray-50 overflow-x-auto w-full">
           {/* Quick Search */}
           <div className="flex items-center gap-1.5 bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100 flex-1 min-w-[200px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest shrink-0 w-[50px]">Search:</span>
+            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest shrink-0 w-[50px]">Ministry:</span>
             <input
               type="text"
               list="dashboard-ministry-list"
@@ -240,7 +240,7 @@ export default function Dashboard() {
                   setIsQuickSearchSelected(false);
                 }
               }}
-              placeholder={isQuickSearchSelected ? "Locked" : "Type ministry..."}
+              placeholder={isQuickSearchSelected ? "Locked" : "Quick Search Ministry"}
               className="bg-transparent text-[9px] font-black text-emerald-950 outline-none flex-1 placeholder:text-emerald-300 disabled:opacity-50 min-w-0"
               disabled={isQuickSearchSelected}
             />
@@ -253,7 +253,7 @@ export default function Dashboard() {
 
           {/* Category Filter */}
           <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[130px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Cat:</span>
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Category:</span>
             <select
               value={activeCategory}
               onChange={(e) => {
@@ -266,7 +266,7 @@ export default function Dashboard() {
               className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 flex-1 min-w-0"
               disabled={isQuickSearchSelected}
             >
-              <option value="All">All Categories</option>
+              <option value="All"></option>
               {DONATION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
             {isQuickSearchSelected && <LockIcon />}
@@ -274,7 +274,7 @@ export default function Dashboard() {
 
           {/* Department Filter */}
           <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[160px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Dept:</span>
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Department:</span>
             <select
               value={activeDept}
               onChange={(e) => {
@@ -286,7 +286,7 @@ export default function Dashboard() {
               className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
               disabled={activeCategory === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
-              <option value="All">Select Dept</option>
+              <option value="All"></option>
               {activeCategory === "MSK" && MSK_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
               {activeCategory === "Religious Organization" && RELIGIOUS_ORG_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
               {activeCategory === "Parishioner" && <option value="GENERAL">GENERAL</option>}
@@ -296,7 +296,7 @@ export default function Dashboard() {
 
           {/* Ministry Filter */}
           <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 flex-1 min-w-[150px] shrink-0">
-            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Min:</span>
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Ministry:</span>
             <select
               value={activeMinistry}
               onChange={(e) => {
@@ -307,7 +307,7 @@ export default function Dashboard() {
               className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
               disabled={activeDept === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
-              <option value="All">Select Ministry</option>
+              <option value="All"></option>
               {ALL_MINISTRIES
                 .filter(m => {
                   const normalize = (s: string) => (s || "").toLowerCase().trim();
@@ -345,11 +345,11 @@ export default function Dashboard() {
         {/* KPI CARDS - Spanning Top row */}
         <div className="col-span-12 row-span-1 grid grid-cols-4 gap-4">
           {[
-            { label: activeMonth === -1 ? "Annual Summary" : "Current Month Summary", val: `₱${monthTotal.toLocaleString()}` },
+            { label: activeMonth === -1 ? "Total Donations" : "Current Month Donations", val: `₱${monthTotal.toLocaleString()}` },
             { label: "Contributors", val: monthGivers },
-            { label: "Avg Contribution", val: `₱${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+            { label: "Average Donations", val: `₱${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
             {
-              label: "Highest Single Gift",
+              label: "Highest Single Donation",
               val: `₱${monthLargest?.amount.toLocaleString() || 0}`,
               subtitle: monthLargest ? [monthLargest.giverName, (!monthLargest.ministry || monthLargest.ministry === "N/A") ? "Parishioner" : monthLargest.ministry] : []
             }
@@ -373,9 +373,20 @@ export default function Dashboard() {
         {/* TREND GRAPH - Central Main Body */}
         <div className="col-span-12 row-span-3 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4 shrink-0">
-            <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest flex items-center gap-3">
-              <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
-              Donation Trend Analysis ({activeYear})
+            <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-widest flex flex-wrap items-center gap-3 w-full min-w-0 pr-4">
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="h-4 w-1 bg-emerald-600 rounded-full"></span>
+                <span>Donation Trend Analyis ({activeYear})</span>
+              </div>
+              {(activeCategory !== "All" || activeDept !== "All" || activeMinistry !== "All") && (
+                <span className="text-emerald-700/60 font-bold truncate uppercase tracking-widest">
+                  — {[
+                    activeCategory !== "All" ? activeCategory : null,
+                    activeDept !== "All" ? activeDept : null,
+                    activeMinistry !== "All" ? activeMinistry : null
+                  ].filter(Boolean).join(" • ")}
+                </span>
+              )}
             </h2>
             <div className="text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
           </div>
