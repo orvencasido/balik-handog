@@ -14,6 +14,13 @@ import {
   ALL_MINISTRIES
 } from "../../src/lib/constants";
 
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-2.5 h-2.5 text-emerald-600 shrink-0">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0110 0v4" />
+  </svg>
+);
+
 export default function AddDonation() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -190,7 +197,10 @@ export default function AddDonation() {
           <div className="space-y-4">
             {/* 1. Global Ministry Search */}
             <div className="space-y-1.5">
-              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1 text-emerald-600">Quick Search: Organization / Ministry {isQuickSearchSelected && "(Locked)"}</label>
+              <div className="flex items-center justify-between px-1">
+                <label className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Quick Search: Organization / Ministry</label>
+                {isQuickSearchSelected && <LockIcon />}
+              </div>
               <input
                 type="text"
                 name="ministry"
@@ -238,7 +248,10 @@ export default function AddDonation() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category {isQuickSearchSelected && "(Locked)"}</label>
+                <div className="flex items-center justify-between px-1">
+                  <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Category</label>
+                  {isQuickSearchSelected && <LockIcon />}
+                </div>
                 <select
                   name="category"
                   value={formData.category}
@@ -254,7 +267,10 @@ export default function AddDonation() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Department {isQuickSearchSelected && "(Locked)"}</label>
+                <div className="flex items-center justify-between px-1">
+                  <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Department</label>
+                  {isQuickSearchSelected && <LockIcon />}
+                </div>
                 <select
                   name="department"
                   value={formData.department}
@@ -283,7 +299,10 @@ export default function AddDonation() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Ministry / Group {isQuickSearchSelected && "(Locked)"}</label>
+              <div className="flex items-center justify-between px-1">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Ministry / Group</label>
+                {isQuickSearchSelected && <LockIcon />}
+              </div>
               <select
                 name="ministry"
                 value={formData.ministry}

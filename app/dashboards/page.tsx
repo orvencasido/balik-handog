@@ -26,6 +26,12 @@ interface Donation {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-2.5 h-2.5 text-emerald-600 shrink-0">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0110 0v4" />
+  </svg>
+);
 
 export default function Dashboard() {
   const router = useRouter();
@@ -37,10 +43,11 @@ export default function Dashboard() {
   const [activeMonth, setActiveMonth] = useState<number>(-1); // Default to All Months
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  // New Filters state
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [activeDept, setActiveDept] = useState<string>("All");
   const [activeMinistry, setActiveMinistry] = useState<string>("All");
+  const [quickSearch, setQuickSearch] = useState<string>("");
+  const [isQuickSearchSelected, setIsQuickSearchSelected] = useState(false);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -207,53 +214,100 @@ export default function Dashboard() {
         </div>
 
         {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-50">
+        <div className="flex flex-nowrap items-center gap-1.5 pt-3 border-t border-gray-50 overflow-x-auto w-full">
+          {/* Quick Search */}
+          <div className="flex items-center gap-1.5 bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100 flex-1 min-w-[200px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest shrink-0 w-[50px]">Search:</span>
+            <input
+              type="text"
+              list="dashboard-ministry-list"
+              value={quickSearch}
+              onChange={(e) => {
+                const val = e.target.value;
+                setQuickSearch(val);
+                const match = ALL_MINISTRIES.find(m => m.name === val);
+                if (match) {
+                  setActiveCategory(match.category);
+                  setActiveDept(match.department);
+                  setActiveMinistry(match.name);
+                  setIsQuickSearchSelected(true);
+                } else if (val === "") {
+                  setActiveCategory("All");
+                  setActiveDept("All");
+                  setActiveMinistry("All");
+                  setIsQuickSearchSelected(false);
+                } else {
+                  setIsQuickSearchSelected(false);
+                }
+              }}
+              placeholder={isQuickSearchSelected ? "Locked" : "Type ministry..."}
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none flex-1 placeholder:text-emerald-300 disabled:opacity-50 min-w-0"
+              disabled={isQuickSearchSelected}
+            />
+            <datalist id="dashboard-ministry-list">
+              {ALL_MINISTRIES.map(m => (
+                <option key={m.name} value={m.name} />
+              ))}
+            </datalist>
+          </div>
+
           {/* Category Filter */}
-          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
-            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Category:</span>
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[130px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Cat:</span>
             <select
               value={activeCategory}
               onChange={(e) => {
                 setActiveCategory(e.target.value);
                 setActiveDept("All");
                 setActiveMinistry("All");
+                setQuickSearch("");
+                setIsQuickSearchSelected(false);
               }}
-              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer"
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 flex-1 min-w-0"
+              disabled={isQuickSearchSelected}
             >
               <option value="All">All Categories</option>
               {DONATION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
+            {isQuickSearchSelected && <LockIcon />}
           </div>
 
           {/* Department Filter */}
-          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
-            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Dept:</span>
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 w-[160px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Dept:</span>
             <select
               value={activeDept}
               onChange={(e) => {
                 setActiveDept(e.target.value);
                 setActiveMinistry("All");
+                setQuickSearch("");
+                setIsQuickSearchSelected(false);
               }}
-              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              disabled={activeCategory === "Parishioner"}
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
+              disabled={activeCategory === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
-              <option value="All">All Departments</option>
+              <option value="All">Select Dept</option>
               {activeCategory === "MSK" && MSK_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
               {activeCategory === "Religious Organization" && RELIGIOUS_ORG_DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
               {activeCategory === "Parishioner" && <option value="GENERAL">GENERAL</option>}
             </select>
+            {isQuickSearchSelected && <LockIcon />}
           </div>
 
           {/* Ministry Filter */}
-          <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-gray-100">
-            <span className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest">Ministry:</span>
+          <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded-lg border border-gray-100 flex-1 min-w-[150px] shrink-0">
+            <span className="text-[7px] font-black text-emerald-900/40 uppercase tracking-widest shrink-0">Min:</span>
             <select
               value={activeMinistry}
-              onChange={(e) => setActiveMinistry(e.target.value)}
-              className="bg-transparent text-[10px] font-black text-emerald-950 outline-none cursor-pointer max-w-[150px] disabled:opacity-30 disabled:cursor-not-allowed"
-              disabled={activeCategory === "Parishioner"}
+              onChange={(e) => {
+                setActiveMinistry(e.target.value);
+                setQuickSearch("");
+                setIsQuickSearchSelected(false);
+              }}
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
+              disabled={activeDept === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
-              <option value="All">All Ministries</option>
+              <option value="All">Select Ministry</option>
               {ALL_MINISTRIES
                 .filter(m => {
                   const normalize = (s: string) => (s || "").toLowerCase().trim();
@@ -263,21 +317,25 @@ export default function Dashboard() {
                 })
                 .map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
             </select>
+            {isQuickSearchSelected && <LockIcon />}
           </div>
 
-          {/* Clear Filters */}
-          {(activeCategory !== "All" || activeDept !== "All" || activeMinistry !== "All") && (
-            <button
-              onClick={() => {
-                setActiveCategory("All");
-                setActiveDept("All");
-                setActiveMinistry("All");
-              }}
-              className="text-[8px] font-black text-red-500 uppercase hover:text-red-700 transition-colors ml-auto"
-            >
-              Reset Filters
-            </button>
-          )}
+          {/* Always Show Reset Filters */}
+          <button
+            onClick={() => {
+              setActiveCategory("All");
+              setActiveDept("All");
+              setActiveMinistry("All");
+              setQuickSearch("");
+              setIsQuickSearchSelected(false);
+            }}
+            className={`text-[8px] font-black uppercase transition-colors ml-auto shrink-0 ${activeCategory === "All" && activeDept === "All" && activeMinistry === "All" && !isQuickSearchSelected
+              ? "text-gray-300 pointer-events-none"
+              : "text-red-500 hover:text-red-700 cursor-pointer"
+              }`}
+          >
+            Reset Filters
+          </button>
         </div>
       </header>
 
