@@ -150,8 +150,8 @@ export default function AnalyticsPage() {
       {/* Primary KPI Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: "Aggregate Value", val: `₱ ${totalAmount.toLocaleString()}` },
-          { label: "Mean Contribution", val: `₱ ${avgDonation.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+          { label: "Aggregate Value", val: `₱ ${(Number(totalAmount) || 0).toLocaleString()}` },
+          { label: "Mean Contribution", val: `₱ ${(Number(avgDonation) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
           { label: "Ledger Entries", val: filteredDonations.length },
           { label: "Active Donors", val: Object.keys(contributorMap).length }
         ].map((s, i) => (
@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
               <div key={m.key} className="group">
                 <div className="flex justify-between text-[9px] sm:text-[10px] font-black text-emerald-900 uppercase tracking-tight mb-1.5 sm:mb-2">
                   <span>{m.key} ({m.name})</span>
-                  <span className="tabular-nums whitespace-nowrap">₱{m.total.toLocaleString()}</span>
+                  <span className="tabular-nums whitespace-nowrap">₱{(Number(m.total) || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="flex-1 h-2 bg-zinc-50 rounded-full overflow-hidden">
@@ -207,7 +207,7 @@ export default function AnalyticsPage() {
                     <p className="text-[8px] sm:text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{c.count} total contributions</p>
                   </div>
                 </div>
-                <div className="text-xs sm:text-sm font-black text-emerald-950 tabular-nums whitespace-nowrap ml-3">₱{c.total.toLocaleString()}</div>
+                <div className="text-xs sm:text-sm font-black text-emerald-950 tabular-nums whitespace-nowrap ml-3">₱{(Number(c.total) || 0).toLocaleString()}</div>
               </div>
             ))}
             {topContributors.length === 0 && <p className="text-center py-10 text-[10px] font-black italic text-zinc-300 uppercase">No contributor records found</p>}
@@ -227,7 +227,7 @@ export default function AnalyticsPage() {
                 <div key={day} className="space-y-1">
                   <div className="flex justify-between text-[8px] sm:text-[9px] font-black text-emerald-900/40 uppercase tracking-widest">
                     <span className="truncate">{day}</span>
-                    <span>{amount > 0 ? <span className="whitespace-nowrap">₱{amount.toLocaleString()}</span> : '--'}</span>
+                    <span>{amount > 0 ? <span className="whitespace-nowrap">₱{(Number(amount) || 0).toLocaleString()}</span> : '--'}</span>
                   </div>
                   <div className="h-1 w-full bg-zinc-50 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-all" style={{ width: `${perc}%` }} />
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
               <div key={dept.name} className="bg-white/5 border border-white/10 p-4 sm:p-6 rounded-xl sm:rounded-2xl hover:bg-white/10 transition-all">
                 <div className="flex justify-between items-start mb-3 sm:mb-4">
                   <span className="text-[9px] sm:text-[10px] font-black text-emerald-400 uppercase tracking-widest">RANK 0{i + 1}</span>
-                  <div className="text-white font-black text-base sm:text-lg tabular-nums whitespace-nowrap">₱{dept.total.toLocaleString()}</div>
+                  <div className="text-white font-black text-base sm:text-lg tabular-nums whitespace-nowrap">₱{(Number(dept.total) || 0).toLocaleString()}</div>
                 </div>
                 <div className="text-white font-black text-[10px] sm:text-xs uppercase tracking-tight mb-2 truncate">{dept.name}</div>
                 <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">

@@ -349,12 +349,12 @@ export default function Dashboard() {
         {/* KPI CARDS */}
         <div className="lg:col-span-12 lg:row-span-1 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { label: activeMonth === -1 ? "Total Donations" : "Current Month Donations", val: `₱${monthTotal.toLocaleString()}` },
+            { label: activeMonth === -1 ? "Total Donations" : "Current Month Donations", val: `₱${(Number(monthTotal) || 0).toLocaleString()}` },
             { label: "Contributors", val: monthGivers },
-            { label: "Average Donations", val: `₱${monthAvg.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+            { label: "Average Donations", val: `₱${(Number(monthAvg) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
             {
               label: "Highest Single Donation",
-              val: `₱${monthLargest?.amount.toLocaleString() || 0}`,
+              val: `₱${(Number(monthLargest?.amount) || 0).toLocaleString()}`,
               subtitle: monthLargest ? [monthLargest.giverName, (!monthLargest.ministry || monthLargest.ministry === "N/A") ? "Parishioner" : monthLargest.ministry] : []
             }
           ].map((stat, i) => (
@@ -392,7 +392,7 @@ export default function Dashboard() {
                 </span>
               )}
             </h2>
-            <div className="text-[8px] sm:text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{yearMax.toLocaleString()}</div>
+            <div className="text-[8px] sm:text-[9px] font-black text-emerald-900/40 uppercase tabular-nums whitespace-nowrap">Peak: ₱{(Number(yearMax) || 0).toLocaleString()}</div>
           </div>
 
           <div className="flex-1 relative min-h-0">
@@ -473,7 +473,7 @@ export default function Dashboard() {
                         >
                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-[#022c22]" />
                           <div className="text-[9px] font-black text-white tabular-nums leading-none">
-                            ₱{s.total.toLocaleString()}
+                            ₱{(Number(s.total) || 0).toLocaleString()}
                           </div>
                           <div className="text-[5px] font-black text-[#6ee7b7] uppercase tracking-widest leading-none mt-1">
                             {s.count} tx • {s.givers} donors
