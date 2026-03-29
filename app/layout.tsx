@@ -1,9 +1,7 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Sidebar from "./components/Sidebar";
 import "./globals.css";
+import ClientLayout from "./client-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,28 +13,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata: Metadata = {
+  title: "Balik Handog | St. Ferdinand Cathedral",
+  description: "Digital Donation Management System",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  
-  // Only show the sidebar on actual application pages
-  const isAppRoute = ["/dashboards", "/records", "/donate", "/analytics", "/about"].some(route => pathname.startsWith(route));
-
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="h-full bg-background flex text-foreground">
-        {isAppRoute && <Sidebar />}
-        <div className={`flex-1 flex flex-col min-h-screen ${isAppRoute ? "pt-14 lg:pt-0 lg:pl-52" : ""}`}>
-          <main className={`flex-1 flex flex-col ${isAppRoute ? "p-4 sm:p-6 lg:p-8" : ""}`}>
-            {children}
-          </main>
-        </div>
+      <body className="h-full bg-background text-foreground tracking-tight">
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

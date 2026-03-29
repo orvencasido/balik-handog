@@ -1,9 +1,25 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../src/lib/firebase/client";
 import Image from "next/image";
 import logoCathedral from "../logo-cathedral.svg";
 
 export default function AboutPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        router.push("/");
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, [router]);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 py-4 sm:py-8 px-1">
       {/* 1. Project Header & Story */}
