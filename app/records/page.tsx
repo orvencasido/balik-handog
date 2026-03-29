@@ -212,7 +212,7 @@ export default function DonationsList() {
                   </td>
                   <td className="px-4 h-14 align-middle">
                     <div className="flex items-center h-full">
-                      <span className="text-[9px] font-black text-emerald-800 uppercase tracking-tight whitespace-nowrap">{donation.category || 'N/A'}</span>
+                      <span className="text-[9px] font-black text-emerald-900/40 group-hover:text-emerald-900 transition-all uppercase tracking-tight whitespace-nowrap">{donation.category || 'N/A'}</span>
                     </div>
                   </td>
                   <td className="px-4 h-14 align-middle text-center">
