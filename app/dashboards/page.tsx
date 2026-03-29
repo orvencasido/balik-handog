@@ -337,6 +337,10 @@ export default function Dashboard() {
             Reset Filters
           </button>
         </div>
+
+        <h2 className="pt-3 text-[11px] sm:text-[13px] font-black text-zinc-400 uppercase tracking-widest text-center w-full">
+          Category: <span className="text-emerald-600">{activeCategory}</span> <span className="text-zinc-300 mx-1.5">|</span> Department: <span className="text-emerald-600">{activeDept}</span> <span className="text-zinc-300 mx-1.5">|</span> Ministry: <span className="text-emerald-600">{activeMinistry}</span>
+        </h2>
       </header>
 
       {/* MAIN CONTENT GRID - SINGLE PAGE LAYOUT */}
@@ -355,9 +359,9 @@ export default function Dashboard() {
             }
           ].map((stat, i) => (
             <div key={i} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm shadow-emerald-900/5 flex flex-col justify-center gap-2 hover:border-emerald-100 transition-all group">
-              <span className="text-[8px] font-bold text-emerald-900/40 uppercase tracking-[0.15em] leading-none">{stat.label}</span>
+              <span className="text-[10px] font-black text-emerald-900/70 uppercase tracking-[0.15em] leading-none">{stat.label}</span>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
+                <span className="text-3xl font-black text-emerald-950 tabular-nums tracking-tight leading-none mb-1.5 group-hover:text-emerald-900 transition-colors whitespace-nowrap">{stat.val}</span>
                 <div className="flex flex-col min-h-[22px] justify-center">
                   {(Array.isArray(stat.subtitle) ? stat.subtitle : [stat.subtitle]).filter(Boolean).map((line, idx) => (
                     <span key={idx} className={`${idx === 1 ? 'text-[7px] font-semibold text-emerald-800/40' : 'text-[8px] font-bold text-emerald-700/70'} uppercase tracking-widest truncate leading-tight`}>
@@ -412,13 +416,17 @@ export default function Dashboard() {
 
                 <defs>
                   <linearGradient id="trend-grad-area" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
+                    <stop offset="35%" stopColor="#10b981" stopOpacity="0.10" />
                     <stop offset="100%" stopColor="#059669" stopOpacity="0.0" />
                   </linearGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#059669" floodOpacity="0.4" />
+                  </filter>
                 </defs>
 
                 <path d={`${generatePath()} L${GRAPH_WIDTH},${GRAPH_HEIGHT} L0,${GRAPH_HEIGHT} Z`} fill="url(#trend-grad-area)" />
-                <path d={generatePath()} fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                <path d={generatePath()} fill="none" stroke="#10b981" strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter="url(#glow)" />
               </svg>
 
               {/* HTML Overlay for Points and Tooltips */}
@@ -443,15 +451,15 @@ export default function Dashboard() {
                       onMouseLeave={() => setHoveredMonth(null)}
                     >
                       <div
-                        className={`rounded-full border-[#059669] transition-all duration-300 absolute box-border ${isActive || isHovered
-                          ? "bg-[#059669] border-[2.5px] w-[10px] h-[10px]"
-                          : "bg-white border-[1.5px] w-[6px] h-[6px]"
+                        className={`rounded-full border-[#10b981] transition-all duration-300 absolute box-border shadow-md ${isActive || isHovered
+                          ? "bg-[#10b981] border-[3px] w-[14px] h-[14px] shadow-[#10b981]/50 scale-125"
+                          : "bg-white border-[2.5px] w-[10px] h-[10px] shadow-[#059669]/20"
                           }`}
                       />
 
                       {!isHovered && s.total > 0 && (
                         <div
-                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[8px] text-emerald-800 font-black' : 'text-[6px] text-emerald-600/50 font-bold'
+                          className={`absolute pointer-events-none transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[9px] text-emerald-900 font-black' : 'text-[7px] text-emerald-700/60 font-bold'
                             }`}
                           style={{
                             left: '50%', top: '50%',
