@@ -20,6 +20,7 @@ export default function AddDonation() {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [isQuickSearchSelected, setIsQuickSearchSelected] = useState(false);
 
   const [formData, setFormData] = useState({
     giverName: "",
@@ -69,15 +70,17 @@ export default function AddDonation() {
           category: match.category,
           department: match.department
         }));
+        setIsQuickSearchSelected(true);
         return;
       }
       setFormData(prev => ({ ...prev, [name]: value }));
+      setIsQuickSearchSelected(false);
     } else if (name === 'category') {
-      // Cascading reset: category -> department -> group
-      setFormData(prev => ({ ...prev, [name]: value, department: "", groupName: "" }));
+      // Cascading reset: category -> department -> ministry
+      setFormData(prev => ({ ...prev, [name]: value, department: "", ministry: "" }));
     } else if (name === 'department') {
-      // Cascading reset: department -> group
-      setFormData(prev => ({ ...prev, [name]: value, groupName: "" }));
+      // Cascading reset: department -> ministry
+      setFormData(prev => ({ ...prev, [name]: value, ministry: "" }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -96,6 +99,7 @@ export default function AddDonation() {
       recordedBy: ""
     });
     setStatus(null);
+    setIsQuickSearchSelected(false);
   };
 
   const getMinistryOptions = () => {
@@ -156,6 +160,7 @@ export default function AddDonation() {
         noOfGivers: "1",
         recordedBy: ""
       });
+      setIsQuickSearchSelected(false);
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message || "Save failed." });
     } finally {
@@ -185,17 +190,17 @@ export default function AddDonation() {
           <div className="space-y-4">
             {/* 1. Global Ministry Search */}
             <div className="space-y-1.5">
-              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1 text-emerald-600">Quick Search: Organization / Ministry</label>
+              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1 text-emerald-600">Quick Search: Organization / Ministry {isQuickSearchSelected && "(Locked)"}</label>
               <input
                 type="text"
                 name="ministry"
                 list="ministry-list"
                 value={formData.ministry}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed"
-                placeholder={formData.category === "Parishioner" ? "Search disabled for Parishioners" : "Start typing ministry name (e.g. Sorrow or Altar)..."}
+                className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder={formData.category === "Parishioner" ? "Search disabled for Parishioners" : (isQuickSearchSelected ? "Selection Locked" : "Start typing ministry name (e.g. Sorrow or Altar)...")}
                 required={formData.category !== "Parishioner"}
-                disabled={formData.category === "Parishioner"}
+                disabled={formData.category === "Parishioner" || isQuickSearchSelected}
               />
               <datalist id="ministry-list">
                 {ALL_MINISTRIES.map((m) => (
@@ -233,13 +238,14 @@ export default function AddDonation() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category (Auto-selected)</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Category {isQuickSearchSelected && "(Locked)"}</label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   required
+                  disabled={isQuickSearchSelected}
                 >
                   <option value="" disabled>Select Category</option>
                   {DONATION_CATEGORIES.map((cat) => (
@@ -248,14 +254,14 @@ export default function AddDonation() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Department (Auto-selected)</label>
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Department {isQuickSearchSelected && "(Locked)"}</label>
                 <select
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   required={formData.category !== "Parishioner"}
-                  disabled={!formData.category || formData.category === "Parishioner"}
+                  disabled={!formData.category || formData.category === "Parishioner" || isQuickSearchSelected}
                 >
                   <option value="">
                     {!formData.category
@@ -274,6 +280,25 @@ export default function AddDonation() {
                   )}
                 </select>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Ministry / Group {isQuickSearchSelected && "(Locked)"}</label>
+              <select
+                name="ministry"
+                value={formData.ministry}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                required
+                disabled={!formData.department || isQuickSearchSelected}
+              >
+                <option value="">
+                  {!formData.department ? "Select Department First" : "Select Ministry/Group"}
+                </option>
+                {getMinistryOptions().map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
