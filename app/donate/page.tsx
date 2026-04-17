@@ -68,18 +68,45 @@ export default function AddDonation() {
     const { name, value } = e.target;
 
     if (name === 'ministry') {
-      // Reverse lookup: Auto-fill category and department when a ministry is selected
-      const match = ALL_MINISTRIES.find(m => m.name === value);
-      if (match) {
+      // 1. Check for exact Ministry match (Full auto-fill & Lock)
+      const ministryMatch = ALL_MINISTRIES.find(m => m.name === value);
+      if (ministryMatch) {
         setFormData(prev => ({
           ...prev,
           ministry: value,
-          category: match.category,
-          department: match.department
+          category: ministryMatch.category,
+          department: ministryMatch.department
         }));
         setIsQuickSearchSelected(true);
         return;
       }
+
+      // 2. Check for Department match (Partial auto-fill, No Lock)
+      const deptMatch = ALL_MINISTRIES.find(m => m.department === value);
+      if (deptMatch) {
+        setFormData(prev => ({
+          ...prev,
+          category: deptMatch.category,
+          department: deptMatch.department,
+          ministry: "" // Clear to let user pick specific ministry below
+        }));
+        setIsQuickSearchSelected(false);
+        return;
+      }
+
+      // 3. Check for Category match (Partial auto-fill, No Lock)
+      const catMatch = ALL_MINISTRIES.find(m => m.category === value);
+      if (catMatch) {
+        setFormData(prev => ({
+          ...prev,
+          category: catMatch.category,
+          department: "",
+          ministry: ""
+        }));
+        setIsQuickSearchSelected(false);
+        return;
+      }
+
       setFormData(prev => ({ ...prev, [name]: value }));
       setIsQuickSearchSelected(false);
     } else if (name === 'category') {
@@ -180,7 +207,7 @@ export default function AddDonation() {
   return (
     <div className="flex-1 space-y-4 sm:space-y-5 font-sans w-full min-h-0 flex flex-col">
       {/* Header - Compact Glass Style */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white/80 backdrop-blur-md px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border border-zinc-100 shadow-sm shadow-zinc-200/50 shrink-0">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 bg-white/80 backdrop-blur-md px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl border border-zinc-100 shadow-sm shadow-zinc-200/50 shrink-0">
         <div>
           <h1 className="text-base sm:text-lg font-black text-emerald-950 tracking-tight leading-none uppercase">Record Donation</h1>
           <p className="text-emerald-700/60 font-bold text-[7px] uppercase tracking-widest mt-1">Balik Handog Insert Donation</p>
@@ -201,16 +228,16 @@ export default function AddDonation() {
       </header>
 
       {/* Main Entry Panel */}
-      <div className="flex-1 bg-white rounded-2xl border border-zinc-100 shadow-xl shadow-zinc-200/20 p-4 sm:p-5 flex flex-col min-h-0 overflow-auto lg:overflow-hidden">
+      <div className="flex-1 bg-white rounded-2xl border border-zinc-100 shadow-xl shadow-zinc-200/20 p-3 sm:p-4 flex flex-col min-h-0 overflow-hidden">
         <form onSubmit={handleSubmit} className="h-full flex flex-col min-h-0">
           {/* Mobile layout: single column stack */}
           {/* Desktop layout: 12-col grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 lg:gap-x-8 gap-y-3 min-h-0 lg:overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 lg:gap-x-6 gap-y-2 min-h-0 flex-1">
 
             {/* Quick Search Ministry */}
-            <div className="lg:col-span-7 space-y-1">
+            <div className="lg:col-span-7 space-y-1 p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-100 shadow-sm shadow-emerald-900/5 transition-all">
               <div className="flex items-center justify-between px-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] leading-none mb-1">Quick Search Ministry</label>
+                <label className="text-[7px] font-black text-emerald-900 uppercase tracking-[0.2em] leading-none mb-1">Quick Search Ministry</label>
                 {isQuickSearchSelected && <LockIcon />}
               </div>
               <input
@@ -219,20 +246,31 @@ export default function AddDonation() {
                 list="ministry-list"
                 value={formData.ministry}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all placeholder:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-1.5 bg-white border border-emerald-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all placeholder:text-emerald-800/40 disabled:opacity-60 disabled:cursor-not-allowed focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/5"
                 placeholder={formData.category === "Parishioner" ? "Search disabled" : (isQuickSearchSelected ? "Locked" : "Type or Select Ministry | Auto-Fill Categories Below")}
                 required={formData.category !== "Parishioner"}
                 disabled={formData.category === "Parishioner" || isQuickSearchSelected}
               />
               <datalist id="ministry-list">
+                {/* Categories */}
+                {Array.from(new Set(ALL_MINISTRIES.map(m => m.category))).map(cat => (
+                  <option key={`cat-${cat}`} value={cat}>{cat} (Category)</option>
+                ))}
+                {/* Departments */}
+                {Array.from(new Set(ALL_MINISTRIES.map(m => m.department))).map(dept => (
+                  <option key={`dept-${dept}`} value={dept}>{dept} (Department)</option>
+                ))}
+                {/* Ministries */}
                 {ALL_MINISTRIES.map((m) => (
-                  <option key={m.name} value={m.name} />
+                  <option key={`min-${m.name}`} value={m.name}>{m.name}</option>
                 ))}
               </datalist>
             </div>
 
             {/* Date and Givers */}
-            <div className="lg:col-span-5 grid grid-cols-2 gap-3">
+            <div className={`lg:col-span-5 grid grid-cols-2 gap-3 p-2.5 rounded-xl border transition-all duration-300 ${(isQuickSearchSelected || formData.category === 'Parishioner')
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
               <div className="space-y-1">
                 <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Log Date</label>
                 <input
@@ -240,7 +278,7 @@ export default function AddDonation() {
                   name="donationDate"
                   value={formData.donationDate}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1">
@@ -250,164 +288,177 @@ export default function AddDonation() {
                   name="noOfGivers"
                   value={formData.noOfGivers}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
+                  className="w-full px-3 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
                   required
                 />
               </div>
             </div>
 
-            {/* Category and Department */}
-            <div className="lg:col-span-7 grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Category</label>
-                <div className="relative">
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed pr-10"
-                    required
-                    disabled={isQuickSearchSelected}
-                  >
-                    <option value="" disabled>Select Category</option>
-                    {DONATION_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Department</label>
-                <div className="relative">
-                  <select
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed pr-10"
-                    required={formData.category !== "Parishioner"}
-                    disabled={!formData.category || formData.category === "Parishioner" || isQuickSearchSelected}
-                  >
-                    <option value="">
-                      {!formData.category ? "Select Category First" : (formData.category === "Parishioner" ? "GENERAL" : "Select Dept")}
-                    </option>
-                    {formData.category === "MSK" && MSK_DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                    {formData.category === "Religious Organization" && RELIGIOUS_ORG_DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                    {formData.category === "Parishioner" && (
-                      <option value="GENERAL">GENERAL</option>
-                    )}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
+            {/* Category */}
+            <div className={`lg:col-span-4 space-y-1 p-2.5 rounded-xl border transition-all duration-300 ${!isQuickSearchSelected && formData.category !== 'Parishioner'
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Category</label>
+              <div className="relative">
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full pl-3 pr-8 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed truncate"
+                  title={formData.category}
+                  required
+                  disabled={isQuickSearchSelected}
+                >
+                  <option value="" disabled>Select Category</option>
+                  {DONATION_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </div>
             </div>
 
-            {/* Recorded By */}
-            <div className="lg:col-span-5 space-y-1">
+            {/* Department */}
+            <div className={`lg:col-span-4 space-y-1 p-2.5 rounded-xl border transition-all duration-300 ${(!isQuickSearchSelected && formData.category !== 'Parishioner')
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Department</label>
+              <div className="relative">
+                <select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  className="w-full pl-3 pr-8 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed truncate"
+                  title={formData.department}
+                  required={formData.category !== "Parishioner"}
+                  disabled={!formData.category || formData.category === "Parishioner" || isQuickSearchSelected}
+                >
+                  <option value="">
+                    {!formData.category ? "Select Category First" : (formData.category === "Parishioner" ? "GENERAL" : "Select Dept")}
+                  </option>
+                  {formData.category === "MSK" && MSK_DEPARTMENTS.map((dept) => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                  {formData.category === "Religious Organization" && RELIGIOUS_ORG_DEPARTMENTS.map((dept) => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                  {formData.category === "Parishioner" && (
+                    <option value="GENERAL">GENERAL</option>
+                  )}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Ministry Selection (Swapped) */}
+            <div className={`lg:col-span-4 space-y-1 p-2.5 rounded-xl border transition-all duration-300 ${(!isQuickSearchSelected && formData.category !== 'Parishioner')
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Ministry</label>
+              <div className="relative">
+                <select
+                  name="ministry"
+                  value={formData.ministry}
+                  onChange={handleInputChange}
+                  className="w-full pl-3 pr-8 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed truncate"
+                  title={formData.ministry}
+                  required
+                  disabled={!formData.category || !formData.department || isQuickSearchSelected}
+                >
+                  <option value="">
+                    {!formData.department ? "Select Dept First" : "Select Min"}
+                  </option>
+                  {getMinistryOptions().map((opt: string) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Donator Name (Widened) */}
+            <div className={`lg:col-span-8 space-y-1 p-2.5 rounded-xl border transition-all duration-300 ${(isQuickSearchSelected || formData.category === 'Parishioner')
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Donator Name</label>
+              <input
+                type="text"
+                name="giverName"
+                value={formData.giverName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
+                required
+                placeholder="Enter Full Name"
+              />
+            </div>
+
+            {/* Amount */}
+            <div className={`lg:col-span-4 space-y-1 p-2.5 rounded-xl border transition-all duration-300 ${(isQuickSearchSelected || formData.category === 'Parishioner')
+              ? "bg-emerald-50/30 border-emerald-400 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/5" 
+              : "bg-zinc-50/30 border-zinc-100/50"}`}>
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Amount (₱)</label>
+              <input
+                type="number"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                className="w-full px-3 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none tabular-nums transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
+                required
+                placeholder="0.00"
+              />
+            </div>
+
+            {/* Recorded By (Plain) */}
+            <div className="lg:col-span-4 space-y-1 px-1">
               <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Recorded By</label>
               <input
                 type="text"
                 name="recordedBy"
                 value={formData.recordedBy}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
-                placeholder="Enter Recorded Full Name"
+                className="w-full px-3 py-1.5 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
+                placeholder="Encoded By"
               />
             </div>
 
-            {/* Ministry, Name, Amount */}
-            <div className="lg:col-span-7 space-y-3">
-              <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Ministry</label>
-                <div className="relative">
-                  <select
-                    name="ministry"
-                    value={formData.ministry}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none appearance-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed pr-10"
-                    required
-                    disabled={!formData.category || !formData.department || isQuickSearchSelected}
-                  >
-                    <option value="">
-                      {!formData.department ? "Select Department First" : "Select Min"}
-                    </option>
-                    {getMinistryOptions().map((opt: string) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Donator Name</label>
-                <input
-                  type="text"
-                  name="giverName"
-                  value={formData.giverName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
-                  required
-                  placeholder="Enter Full Name"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Amount (₱)</label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none tabular-nums transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400"
-                  required
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="lg:col-span-5 flex flex-col h-full min-h-0">
-              <div className="flex-1 flex flex-col space-y-1 min-h-0">
-                <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Transaction Notes</label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  className="flex-1 w-full px-4 py-2 bg-zinc-50/50 border border-zinc-100 rounded-xl text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400 resize-none min-h-[80px] lg:min-h-0"
-                  placeholder="Enter Notes, eg. AR No."
-                />
-              </div>
+            {/* Transaction Notes (Plain) */}
+            <div className="lg:col-span-8 space-y-1 px-1">
+              <label className="text-[7px] font-black text-emerald-900/40 uppercase tracking-[0.2em] px-1">Transaction Notes</label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                className="w-full px-3 py-1 bg-zinc-50/50 border border-zinc-100 rounded-lg text-xs font-bold text-emerald-950 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-zinc-400 resize-none min-h-[32px] lg:min-h-0"
+                placeholder="Enter Notes, eg. AR No."
+              />
             </div>
           </div>
 
           {/* Unified Action Footer */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 shrink-0 mt-4 lg:mt-auto">
+          <div className="grid grid-cols-2 gap-3 shrink-0 mt-4 sm:mt-6 lg:mt-auto">
             <button
               type="button"
               onClick={clearForm}
-              className="py-3 bg-zinc-50 text-zinc-400 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-zinc-100 hover:text-zinc-600 transition-all border border-zinc-100 transform active:scale-[0.98]"
+              className="py-2.5 bg-zinc-50 text-zinc-400 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-zinc-100 hover:text-zinc-600 transition-all border border-zinc-100 transform active:scale-[0.98]"
             >
               Clear Entries
             </button>
             <button
               type="submit"
               disabled={submitLoading}
-              className="py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:from-emerald-700 hover:to-teal-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-900/10 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:from-emerald-700 hover:to-teal-800 transform active:scale-[0.98] transition-all shadow-lg shadow-emerald-900/10 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitLoading ? (
                 <div className="flex items-center gap-2">
