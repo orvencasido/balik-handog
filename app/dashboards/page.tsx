@@ -9,7 +9,8 @@ import {
   DONATION_CATEGORIES,
   MSK_DEPARTMENTS,
   RELIGIOUS_ORG_DEPARTMENTS,
-  ALL_MINISTRIES
+  ALL_MINISTRIES,
+  fixSpelling
 } from "../../src/lib/constants";
 
 interface Donation {
@@ -69,10 +70,10 @@ export default function Dashboard() {
           ...d,
           amount: typeof d.amount === 'number' ? d.amount : (Number(String(d.amount || 0).replace(/[^\d.-]/g, "")) || 0),
           noOfGivers: typeof d.noOfGivers === 'number' ? d.noOfGivers : (Number(String(d.noOfGivers || 1).replace(/[^\d.-]/g, "")) || 1),
-          category: d.category ? String(d.category).trim() : "Uncategorized",
-          department: d.department ? String(d.department).trim() : "N/A",
-          ministry: d.ministry ? String(d.ministry).trim() : (d.groupName ? String(d.groupName).trim() : "N/A"),
-          groupName: d.groupName ? String(d.groupName).trim() : "N/A",
+          category: fixSpelling(d.category),
+          department: fixSpelling(d.department),
+          ministry: fixSpelling(d.ministry || d.groupName),
+          groupName: fixSpelling(d.groupName || d.ministry),
         };
       }) as Donation[];
       setDonations(data);
@@ -225,13 +226,38 @@ export default function Dashboard() {
               onChange={(e) => {
                 const val = e.target.value;
                 setQuickSearch(val);
-                const match = ALL_MINISTRIES.find(m => m.name === val);
-                if (match) {
-                  setActiveCategory(match.category);
-                  setActiveDept(match.department);
-                  setActiveMinistry(match.name);
+
+                // 1. Check for Ministry match (Full auto-fill & Lock)
+                const ministryMatch = ALL_MINISTRIES.find(m => m.name === val);
+                if (ministryMatch) {
+                  setActiveCategory(ministryMatch.category);
+                  setActiveDept(ministryMatch.department);
+                  setActiveMinistry(ministryMatch.name);
                   setIsQuickSearchSelected(true);
-                } else if (val === "") {
+                  return;
+                }
+
+                // 2. Check for Department match (Partial auto-fill, No Lock)
+                const deptMatch = ALL_MINISTRIES.find(m => m.department === val);
+                if (deptMatch) {
+                  setActiveCategory(deptMatch.category);
+                  setActiveDept(deptMatch.department);
+                  setActiveMinistry("All");
+                  setIsQuickSearchSelected(false);
+                  return;
+                }
+
+                // 3. Check for Category match (Partial auto-fill, No Lock)
+                const catMatch = ALL_MINISTRIES.find(m => m.category === val);
+                if (catMatch) {
+                  setActiveCategory(catMatch.category);
+                  setActiveDept("All");
+                  setActiveMinistry("All");
+                  setIsQuickSearchSelected(false);
+                  return;
+                }
+
+                if (val === "") {
                   setActiveCategory("All");
                   setActiveDept("All");
                   setActiveMinistry("All");
@@ -240,13 +266,22 @@ export default function Dashboard() {
                   setIsQuickSearchSelected(false);
                 }
               }}
-              placeholder={isQuickSearchSelected ? "Locked" : "Quick Search Ministry"}
+              placeholder={isQuickSearchSelected ? "Locked" : "Select Ministry or Category"}
               className="bg-transparent text-[9px] font-black text-emerald-950 outline-none flex-1 placeholder:text-emerald-300 disabled:opacity-50 min-w-0"
               disabled={isQuickSearchSelected}
             />
             <datalist id="dashboard-ministry-list">
+              {/* Categories */}
+              {Array.from(new Set(ALL_MINISTRIES.map(m => m.category))).map(cat => (
+                <option key={`cat-${cat}`} value={cat}>{cat} (Category)</option>
+              ))}
+              {/* Departments */}
+              {Array.from(new Set(ALL_MINISTRIES.map(m => m.department))).map(dept => (
+                <option key={`dept-${dept}`} value={dept}>{dept} (Department)</option>
+              ))}
+              {/* Ministries */}
               {ALL_MINISTRIES.map(m => (
-                <option key={m.name} value={m.name} />
+                <option key={`min-${m.name}`} value={m.name}>{m.name}</option>
               ))}
             </datalist>
           </div>
@@ -263,7 +298,8 @@ export default function Dashboard() {
                 setQuickSearch("");
                 setIsQuickSearchSelected(false);
               }}
-              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 flex-1 min-w-0"
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 flex-1 min-w-0 truncate"
+              title={activeCategory}
               disabled={isQuickSearchSelected}
             >
               <option value="All"></option>
@@ -283,7 +319,8 @@ export default function Dashboard() {
                 setQuickSearch("");
                 setIsQuickSearchSelected(false);
               }}
-              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0 truncate"
+              title={activeDept}
               disabled={activeCategory === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
               <option value="All"></option>
@@ -304,7 +341,8 @@ export default function Dashboard() {
                 setQuickSearch("");
                 setIsQuickSearchSelected(false);
               }}
-              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0"
+              className="bg-transparent text-[9px] font-black text-emerald-950 outline-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-1 min-w-0 truncate"
+              title={activeMinistry}
               disabled={activeDept === "All" || activeCategory === "Parishioner" || isQuickSearchSelected}
             >
               <option value="All"></option>

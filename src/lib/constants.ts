@@ -18,13 +18,15 @@ export const MSK_DEPARTMENTS = [
   "KAWAN XI - SAN JUDAS TADEO",
   "KAWAN XII - SAN MATIAS",
   "KAWAN XIII - SAN MATIAS",
-  "KAWAN XIV"
+  "KAWAN XIV",
+  "Others"
 ];
 
 export const RELIGIOUS_ORG_DEPARTMENTS = [
   "DEPARTMENT OF WORSHIP",
-  "DEPARMENT OF SERVICE",
-  "DEPARMENT OF FORMATION"
+  "DEPARTMENT OF SERVICE",
+  "DEPARTMENT OF FORMATION",
+  "Others"
 ];
 
 export const MSK_GROUPS: Record<string, string[]> = {
@@ -35,8 +37,8 @@ export const MSK_GROUPS: Record<string, string[]> = {
     "Our Lady of Lourdes | Pitong Gatang"
   ],
   "KAWAN II - SAN JUAN": [
-    "Santa Filomena | Tandang Sora",
-    "Santa Filomena | Pur",
+    "Santa Felomina | Tandang Sora",
+    "Santa Felomina | Pur",
     "San Pablo | Pinag isa"
   ],
   "KAWAN III - SANTO TOMAS": [
@@ -68,8 +70,8 @@ export const MSK_GROUPS: Record<string, string[]> = {
   ],
   "KAWAN IX - SAN MATEO": [
     "Our Lady of Miraculous Medal | Milagrosa Subd.",
-    "San Ana | Narra I",
-    "Our Lady of Manaog | Ipil"
+    "Sta. Ana | Narra I",
+    "Our Lady of Manaoag | Ipil"
   ],
   "KAWAN X - SAN ANDRES": [
     "Santa Cecilia | Rosal II",
@@ -104,6 +106,9 @@ export const MSK_GROUPS: Record<string, string[]> = {
     "Niña Maria | Pag ibig",
     "San Judas | Pag- asa",
     "San Jose | North Employees"
+  ],
+  "Others": [
+    "Capistrano"
   ]
 };
 
@@ -111,15 +116,15 @@ export const RELIGIOUS_ORG_GROUPS: Record<string, string[]> = {
   "DEPARTMENT OF WORSHIP": [
     "Ministry of Altar Servers",
     "Ministry of LECTORS AND COMMENTATORS",
-    "MINSTRY OF ACOLYTES",
+    "MINISTRY OF ACOLYTES",
     "MINISTRY OF LITURGICAL MUSIC",
-    "MINISTRY OF USHERS AND SHERETTES",
+    "MINISTRY OF USHERS AND GREETERS",
     "APOSTOLADO NG PANALANGIN",
     "OCDS",
-    "MOTHER OF BUTLEERS GULD",
+    "MOTHER OF BUTLERS GUILD",
     "EL SHADDAI",
-    "CATHOLIC CHARISTMATIC MOVEMENT",
-    "DEDALIA MILAGROSA",
+    "CATHOLIC CHARISMATIC MOVEMENT",
+    "MEDALIA MILAGROSA",
     "DEL CARMEN ASSOCIATION",
     "LOVE OF JESUS",
     "OUR LADY OF GUADALUPE",
@@ -129,20 +134,20 @@ export const RELIGIOUS_ORG_GROUPS: Record<string, string[]> = {
     "APOSTOLES",
     "CAMAREROS DE SAN FERNANDO"
   ],
-  "DEPARMENT OF SERVICE": [
+  "DEPARTMENT OF SERVICE": [
     "LEGION OF MARY",
     "KNIGHTS OF COLUMBUS",
     "CATHOLIC WOMENS LEAGUE (CWL)",
     "DAUGHTERS OF MARY IMMACULATE (DMI)",
     "OUR LADY OF LOURDES ASSOCIATION",
-    "SAINT JOSPEH ASSOCIATION",
+    "SAINT JOSEPH ASSOCIATION",
     "MOTHER OF PERPETUAL HELP",
-    "SERCULAR FRANCISCAN ORDER (OFS)",
+    "SECULAR FRANCISCAN ORDER (OFS)",
     "DIVINE MERCY",
     "ANAWIM",
     "DOLOROSA"
   ],
-  "DEPARMENT OF FORMATION": [
+  "DEPARTMENT OF FORMATION": [
     "ST. ANTHONY ASSOCIATION",
     "ANGKANG LEVITICO",
     "MINISTRY OF CATECHESIS",
@@ -156,9 +161,12 @@ export const RELIGIOUS_ORG_GROUPS: Record<string, string[]> = {
     "SINGLES OF CHRIST",
     "HANDMAID OF THE LORD",
     "SERVERS OF THE LORD",
-    "MARRIAGE ENCOUTER (BLD)",
-    "MARRIAGE ENCOUTER (PDDC)",
-    "CONFRATERNITY OF IMAACULATE CHEART OF MARY"
+    "MARRIAGE ENCOUNTER (BLD)",
+    "MARRIAGE ENCOUNTER (PDDC)",
+    "CONFRATERNITY OF IMMACULATE HEART OF MARY"
+  ],
+  "Others": [
+    "Music Ministry CFC"
   ]
 };
 
@@ -181,3 +189,32 @@ export const ALL_MINISTRIES: FlatMinistry[] = [
   { name: "Thanksgiving", category: "Parishioner", department: "GENERAL" },
   { name: "Special Intention", category: "Parishioner", department: "GENERAL" }
 ];
+
+// Spelling Correction Map: "Old Wrong Text": "Correct Text"
+export const DATA_CORRECTIONS: Record<string, string> = {
+  // Departments
+  "DEPARMENT OF SERVICE": "DEPARTMENT OF SERVICE",
+  "DEPARMENT OF FORMATION": "DEPARTMENT OF FORMATION",
+
+  // Ministries
+  "MOTHER OF BUTLEERS GULD": "MOTHER OF BUTLERS GUILD",
+  "SAINT JOSPEH ASSOCIATION": "SAINT JOSEPH ASSOCIATION",
+  "IMAACULATE CHEART OF MARY": "IMMACULATE HEART OF MARY",
+  "CONFRATERNITY OF IMAACULATE CHEART OF MARY": "CONFRATERNITY OF IMMACULATE HEART OF MARY",
+  "MARRIAGE ENCOUTER": "MARRIAGE ENCOUNTER",
+  "SERCULAR FRANCISCAN ORDER": "SECULAR FRANCISCAN ORDER",
+  "MINSTRY OF ACOLYTES": "MINISTRY OF ACOLYTES",
+  "DEDALIA MILAGROSA": "MEDALIA MILAGROSA",
+  "MINISTRY OF USHERS AND SHERETTES": "MINISTRY OF USHERS AND GREETERS",
+  "Santa Filomena | Tandang Sora": "Santa Felomina | Tandang Sora",
+  "Santa Filomena | Pur": "Santa Felomina | Pur",
+  "San Ana | Narra I": "Sta. Ana | Narra I",
+  "Our Lady of Manaog | Ipil": "Our Lady of Manaoag | Ipil"
+};
+
+// Helper to ensure we show corrected text regardless of what is in Firebase
+export const fixSpelling = (val: string | undefined | null): string => {
+  if (!val) return "N/A";
+  const trimmed = val.trim();
+  return DATA_CORRECTIONS[trimmed] || trimmed;
+};

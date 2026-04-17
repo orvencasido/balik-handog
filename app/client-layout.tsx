@@ -9,7 +9,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  
+
   // Only show the sidebar on actual application pages
   const isAppRoute = ["/dashboards", "/records", "/donate", "/analytics", "/about"].some(route => pathname.startsWith(route));
 
