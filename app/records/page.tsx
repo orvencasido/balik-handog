@@ -47,6 +47,7 @@ export default function DonationsList() {
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [activeDetail, setActiveDetail] = useState<{ title: string, content: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -129,7 +130,8 @@ export default function DonationsList() {
       donation.category?.toLowerCase().includes(q) ||
       donation.department?.toLowerCase().includes(q) ||
       donation.recordedBy?.toLowerCase().includes(q) ||
-      donation.notes?.toLowerCase().includes(q)
+      donation.notes?.toLowerCase().includes(q) ||
+      formatDate(donation.donationDate).toLowerCase().includes(q)
     );
   });
 
@@ -436,22 +438,32 @@ export default function DonationsList() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-6">
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Name</label>
+                <input
+                  type="text"
+                  value={editingDonation.giverName || ""}
+                  onChange={(e) => handleModalInputChange("giverName", e.target.value)}
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donor Name</label>
-                  <input
-                    type="text"
-                    value={editingDonation.giverName || ""}
-                    onChange={(e) => handleModalInputChange("giverName", e.target.value)}
-                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Amount (₱)</label>
                   <input
                     type="number"
                     value={editingDonation.amount ?? 0}
                     onChange={(e) => handleModalInputChange("amount", Number(e.target.value))}
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-emerald-900/40 uppercase tracking-widest px-1">Donation Date</label>
+                  <input
+                    type="date"
+                    value={editingDonation.donationDate || ""}
+                    onChange={(e) => handleModalInputChange("donationDate", e.target.value)}
                     className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 border border-gray-100 rounded-xl text-xs font-bold text-emerald-950 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
@@ -540,32 +552,56 @@ export default function DonationsList() {
             </div>
 
             <div className="p-4 sm:p-8 bg-zinc-50 border-t border-gray-100 flex gap-3 sm:gap-4 shrink-0">
-              <button
-                onClick={() => setEditingDonation(null)}
-                className="flex-1 py-3 sm:py-4 bg-white border border-gray-200 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={updateLoading}
-                onClick={async () => {
-                  if (!editingDonation) return;
-                  setUpdateLoading(true);
-                  try {
-                    const docRef = doc(db, "donations", editingDonation.id);
-                    const { id, ...dataToUpdate } = editingDonation;
-                    await updateDoc(docRef, dataToUpdate);
-                    setEditingDonation(null);
-                  } catch (err) {
-                    alert("Update failed. Check permissions.");
-                  } finally {
-                    setUpdateLoading(false);
-                  }
-                }}
-                className="flex-1 py-3 sm:py-4 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-700/10"
-              >
-                {updateLoading ? 'Saving...' : 'Save Changes'}
-              </button>
+              {isAdmin && (
+                <button
+                  disabled={updateLoading || deleteLoading}
+                  onClick={async () => {
+                    if (!editingDonation) return;
+                    if (window.confirm("Are you SURE you want to permanently delete this record? This cannot be undone.")) {
+                      setDeleteLoading(true);
+                      try {
+                        await deleteDoc(doc(db, "donations", editingDonation.id));
+                        setEditingDonation(null);
+                      } catch (err) {
+                        alert("Delete failed.");
+                      } finally {
+                        setDeleteLoading(false);
+                      }
+                    }
+                  }}
+                  className="px-5 py-3 sm:py-4 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-all border border-red-100"
+                >
+                  {deleteLoading ? '...' : 'Delete'}
+                </button>
+              )}
+              <div className="flex-1 flex gap-3 sm:gap-4 ml-auto">
+                <button
+                  onClick={() => setEditingDonation(null)}
+                  className="flex-1 py-3 sm:py-4 bg-white border border-gray-200 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={updateLoading || deleteLoading}
+                  onClick={async () => {
+                    if (!editingDonation) return;
+                    setUpdateLoading(true);
+                    try {
+                      const docRef = doc(db, "donations", editingDonation.id);
+                      const { id, ...dataToUpdate } = editingDonation;
+                      await updateDoc(docRef, dataToUpdate);
+                      setEditingDonation(null);
+                    } catch (err) {
+                      alert("Update failed. Check permissions.");
+                    } finally {
+                      setUpdateLoading(false);
+                    }
+                  }}
+                  className="flex-1 py-3 sm:py-4 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-700/10"
+                >
+                  {updateLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
